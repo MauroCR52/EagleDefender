@@ -3,8 +3,8 @@ import pygame
 import pygame_gui
 from pygame import mixer
 from Seleccion import Select
-class Menu:
-    def __init__(self, ancho, alto):
+class Menu_window:
+    def __init__(self, ancho, alto, user):
         pygame.init()
         mixer.init()
         self.screen = pygame.display.set_mode((ancho, alto))
@@ -55,7 +55,6 @@ class Menu:
             self.gui_manager.update(time_delta)
 
             self.screen.blit(self.background, (0, 0))
-
 
             # Dibuja los elementos de la interfaz de usuario de pygame_gui
             self.gui_manager.draw_ui(self.screen)

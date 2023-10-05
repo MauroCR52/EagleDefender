@@ -2,6 +2,8 @@
   "en": {
     "sign_in": "Sign in",
     "forgot_pass": "Forgot password?",
-    "sign_up": "Sign up"
+    "sign_up": "Sign up",
+    "create_account": "Create account",
+    "upload_picture": "Upload photo"
   }
 }

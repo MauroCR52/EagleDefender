@@ -1,4 +1,14 @@
 {
     "users": [
+        {
+            "username": "pepito123",
+            "password": "12345",
+            "language": "es"
+        },
+        {
+            "username": "fernando125",
+            "password": "321",
+            "language": "es"
+        }
     ]
 }
