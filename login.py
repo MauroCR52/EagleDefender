@@ -5,11 +5,11 @@ import pygame_gui
 from pygame_gui.elements import UIButton, UIImage
 from pygame_gui.windows import UIFileDialog
 from pygame_gui.core.utility import create_resource_path
-from Menu import Menu_window
+from menu import Menu_window
 from tkinter import messagebox
 
 
-class Initial_window:
+class Login_window:
     def __init__(self, ancho, alto):
         pygame.init()
         self.screen = pygame.display.set_mode((ancho, alto))
@@ -150,7 +150,7 @@ class SignUp_Window:
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.button_signin:
-                        login_window = Initial_window(1366, 768)
+                        login_window = Login_window(1366, 768)
                         login_window.begin()
 
                     elif event.ui_element == self.button_createaccount:
@@ -247,7 +247,7 @@ class SignUp_Window:
                 with open('config/users.json', 'w') as archivo:
                     json.dump(data, archivo, indent=4)
                 messagebox.showinfo("Exito", "Su cuenta se creó exitosamente")
-                login_window = Initial_window(1366, 768)
+                login_window = Login_window(1366, 768)
                 login_window.begin()
 
     def upload_picture(self):
