@@ -2,12 +2,12 @@ import json
 import sys
 import pygame
 import pygame_gui
-from pygame_gui.elements import UIButton, UIImage
+from pygame import mixer
+from pygame_gui.elements import UIImage
 from pygame_gui.windows import UIFileDialog
 from pygame_gui.core.utility import create_resource_path
-from menu import Menu_window
 from tkinter import messagebox
-
+from ingame import InGame
 
 class Login_window:
     def __init__(self, ancho, alto):
@@ -135,6 +135,9 @@ class SignUp_Window:
         self.max_image_display_dimensions = (150, 150)
         self.display_loaded_image = None
 
+        #guardar ruta de foto de perfil
+        self.pic_path="assets/no_pic.png"
+
 
     def begin(self):
         clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
@@ -196,12 +199,13 @@ class SignUp_Window:
                                                                         image_rect.size)
 
                         image_rect.center = (1160, 490)
-
+                        self.pic_path = image_path
                         self.display_loaded_image = UIImage(relative_rect=image_rect,
                                                             image_surface=loaded_image,
                                                             manager=self.gui_manager)
 
                     except pygame.error:
+                        messagebox.showinfo("Error","Selecciona un archivo de formato .jpg o .png")
                         pass
 
                 if (event.type == pygame_gui.UI_WINDOW_CLOSE
@@ -236,7 +240,8 @@ class SignUp_Window:
             new_user = {
                 "username": self.username_entry.get_text(),
                 "password": self.password_entry.get_text(),
-                "language": self.gui_manager.get_locale()
+                "language": self.gui_manager.get_locale(),
+                "profile_pic": self.pic_path
             }
             users = data["users"]
             user_exist = next((user for user in users if user["username"] == new_user["username"]), None)
@@ -261,5 +266,103 @@ class SignUp_Window:
         self.button_picture_label.disable()
 
 
+class Menu_window:
+    def __init__(self, ancho, alto, user):
+        pygame.init()
+        mixer.init()
+        self.screen = pygame.display.set_mode((ancho, alto))
+        pygame.display.set_caption("Menu")
+        self.background = pygame.image.load("assets/mainmenu_bg.png")
+        self.gui_manager = pygame_gui.UIManager((ancho, alto))
+
+        self.user = user
+
+        # Buttons
+        self.button_play = pygame.Rect(395,200, 160, 90)
+        self.button_logout = pygame.Rect(50,700, 140, 50)
+
+        self.button_play_label = pygame_gui.elements.UIButton(relative_rect=self.button_play, text="Jugar", manager=self.gui_manager)
+        self.button_logout_label = pygame_gui.elements.UIButton(relative_rect=self.button_logout, text="Cerrar Sesion", manager=self.gui_manager)
+
+        # Nombre de usuario
+        self.username = pygame.Rect(15, 150, 140, 50)
+        self.username_label = pygame_gui.elements.UILabel(relative_rect=self.username, text=self.user, manager=self.gui_manager)
+
+        self.max_image_display_dimensions = (120, 120)
+
+
+
+    def begin(self):
+        clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
+        with open('config/users.json','r') as file:
+            data = json.load(file)
+            users = data['users']
+            for user in users:
+                if user['username'] == self.user:
+                    image_path = user['profile_pic']
+                    try:
+                        loaded_image = pygame.image.load(image_path).convert_alpha()
+                        image_rect = loaded_image.get_rect()
+                        aspect_ratio = image_rect.width / image_rect.height
+                        need_to_scale = False
+                        if image_rect.width > self.max_image_display_dimensions[0]:
+                            image_rect.width = self.max_image_display_dimensions[0]
+                            image_rect.height = int(image_rect.width / aspect_ratio)
+                            need_to_scale = True
+
+                        if image_rect.height > self.max_image_display_dimensions[1]:
+                            image_rect.height = self.max_image_display_dimensions[1]
+                            image_rect.width = int(image_rect.height * aspect_ratio)
+                            need_to_scale = True
+
+                        if need_to_scale:
+                            loaded_image = pygame.transform.smoothscale(loaded_image,
+                                                                        image_rect.size)
+
+                        image_rect.center = (90, 90)
+                        self.pic_path = image_path
+                        self.display_loaded_image = UIImage(relative_rect=image_rect,
+                                                            image_surface=loaded_image,
+                                                            manager=self.gui_manager)
+
+                    except pygame.error:
+                        pass
+
+        while True:
+            time_delta = clock.tick(60) / 1000.0  # Limita la velocidad de fotogramas a 60 FPS
+
+            #salir del juego con la ventana
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                # Salir del juego con esc
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
+
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.button_play:
+                        pygame.mixer.music.stop()
+                        game= InGame(1366, 768)
+                        game.begin()
+
+                    if event.ui_element == self.button_logout:
+                        pygame.mixer.music.stop()
+                        login_window = Login_window(1366, 768)
+                        login_window.begin()
+
+                # Pasar eventos de pygame a pygame_gui
+                self.gui_manager.process_events(event)            # Actualiza el administrador de interfaz de usuario de pygame_gui
+            self.gui_manager.update(time_delta)
+
+            self.screen.blit(self.background, (0, 0))
+
+            # Dibuja los elementos de la interfaz de usuario de pygame_gui
+            self.gui_manager.draw_ui(self.screen)
+
+            pygame.display.update()
 
 

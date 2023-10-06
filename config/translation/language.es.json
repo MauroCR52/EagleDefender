@@ -4,6 +4,7 @@
     "forgot_pass": "Olvidaste la contraseña?",
     "sign_up": "Registrarse",
     "create_account": "Crear cuenta",
-    "upload_picture": "Agregar foto"
+    "upload_picture": "Agregar foto",
+    "error_picture": "Selecciona un archivo de formato .jpg o .png"
   }
 }
