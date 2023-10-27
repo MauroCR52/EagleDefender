@@ -271,7 +271,7 @@ class Menu_window:
         pygame.init()
         mixer.init()
         self.screen = pygame.display.set_mode((ancho, alto))
-        pygame.display.set_caption("Menu")
+        pygame.display.set_caption("Ventana de Ayuda")
         self.background = pygame.image.load("assets/mainmenu_bg.png")
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
 
@@ -280,10 +280,11 @@ class Menu_window:
         # Buttons
         self.button_play = pygame.Rect(395,200, 160, 90)
         self.button_logout = pygame.Rect(50,700, 140, 50)
+        self.button_help = pygame.Rect(395, 400, 160, 90)
 
         self.button_play_label = pygame_gui.elements.UIButton(relative_rect=self.button_play, text="Jugar", manager=self.gui_manager)
         self.button_logout_label = pygame_gui.elements.UIButton(relative_rect=self.button_logout, text="Cerrar Sesion", manager=self.gui_manager)
-
+        self.button_help_label= pygame_gui.elements.UIButton(relative_rect=self.button_help, text="Ayuda", manager=self.gui_manager)
         # Nombre de usuario
         self.username = pygame.Rect(15, 150, 140, 50)
         self.username_label = pygame_gui.elements.UILabel(relative_rect=self.username, text=self.user, manager=self.gui_manager)
@@ -354,6 +355,11 @@ class Menu_window:
                         login_window = Login_window(1366, 768)
                         login_window.begin()
 
+                    if event.ui_element == self.button_help:
+                        pygame.mixer.music.stop()
+                        help= help_window(1366, 768)
+                        help.begin()
+
                 # Pasar eventos de pygame a pygame_gui
                 self.gui_manager.process_events(event)            # Actualiza el administrador de interfaz de usuario de pygame_gui
             self.gui_manager.update(time_delta)
@@ -364,5 +370,37 @@ class Menu_window:
             self.gui_manager.draw_ui(self.screen)
 
             pygame.display.update()
+
+class help_window:
+
+    def __init__(self, ancho, alto):
+        pygame.init()
+        mixer.init()
+        self.screen = pygame.display.set_mode((ancho, alto))
+        pygame.display.set_caption("Menu")
+        self.background = pygame.image.load("assets/AyudaV.jpg")
+        self.gui_manager = pygame_gui.UIManager((ancho, alto))
+
+    def begin(self):
+        clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
+
+        while True:
+            time_delta = clock.tick(60) / 1000.0  # Limita la velocidad de fotogramas a 60 FPS
+
+            #salir del juego con la ventana
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            self.gui_manager.update(time_delta)
+
+            self.screen.blit(self.background, (0, 0))
+
+            # Dibuja los elementos de la interfaz de usuario de pygame_gui
+            self.gui_manager.draw_ui(self.screen)
+
+            pygame.display.update()
+
 
 
