@@ -1,4 +1,10 @@
 {
     "users": [
+        {
+            "username": "fernando",
+            "password": "maverick",
+            "language": "es",
+            "profile_pic": "assets/no_pic.png"
+        }
     ]
 }

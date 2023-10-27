@@ -22,8 +22,17 @@ class InGame:
                                                       manager=self.gui_manager)
         self.tank = Tank(375,300)
         self.gun = Gun(self.tank)
+
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.tank,self.gun)
+        self.bullet_sprites = pygame.sprite.Group()
+        self.balas_perdidas = 0
+        self.max_disparosf = 0
+        self.max_disparosw = 0
+        self.max_disparosb = 0
+        self.fuente = pygame.font.Font(None, 25)
+        self.blanco = (255, 255, 255)
+        self.negro = (0, 0, 0)
 
     def begin(self):
         clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
@@ -47,13 +56,72 @@ class InGame:
                     self.gui_manager.process_events(event)  # Actualiza el administrador de interfaz de usuario de pygame_gui
 
                 self.all_sprites.update()
+                self.texto = f"Balas perdidas:{self.balas_perdidas}"
+                self.texto_renderizado = self.fuente.render(self.texto, True, self.negro)
 
                 self.gui_manager.update(time_delta)
 
                 self.screen.blit(self.background, (0, 0))
+                self.screen.blit(self.texto_renderizado, (10, 10))
+
+                if self.gun.can_shoot:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_SPACE] and self.max_disparosf < 5:
+                        bullet_angle = self.gun.angle
+                        bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
+                            math.radians(bullet_angle))
+                        bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
+                            math.radians(bullet_angle))
+                        bullet = Bullet(bullet_x, bullet_y, bullet_angle)
+                        self.all_sprites.add(bullet)
+                        self.bullet_sprites.add(bullet)
+                        self.gun.can_shoot = False
+                        self.gun.shoot_cooldown = self.gun.cooldown_duration
+                        self.balas_perdidas += 1
+                        self.max_disparosf += 1
+                        print(self.balas_perdidas)
+                self.bullet_sprites.update()
+
+                if self.gun.can_shoot:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_c] and self.max_disparosw < 5:
+                        bullet_angle = self.gun.angle
+                        bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
+                            math.radians(bullet_angle))
+                        bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
+                            math.radians(bullet_angle))
+                        self.waterbullet = WB(bullet_x, bullet_y, bullet_angle)
+                        self.all_sprites.add(self.waterbullet)
+                        self.bullet_sprites.add(self.waterbullet)
+                        self.gun.can_shoot = False
+                        self.gun.shoot_cooldown = self.gun.cooldown_duration
+                        self.balas_perdidas += 1
+                        self.max_disparosw += 1
+                        print(self.balas_perdidas)
+                self.bullet_sprites.update()
+
+                if self.gun.can_shoot:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_v] and self.max_disparosb < 5:
+                        bullet_angle = self.gun.angle
+                        bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
+                            math.radians(bullet_angle))
+                        bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
+                            math.radians(bullet_angle))
+                        bombbullet = BB(bullet_x, bullet_y, bullet_angle)
+                        self.all_sprites.add(bombbullet)
+                        self.bullet_sprites.add(bombbullet)
+                        self.gun.can_shoot = False
+                        self.gun.shoot_cooldown = self.gun.cooldown_duration
+                        self.balas_perdidas += 1
+                        self.max_disparosb += 1
+                        print(self.balas_perdidas)
+                self.bullet_sprites.update()
 
                 # Dibuja los elementos de la interfaz de usuario de pygame_gui
                 self.gui_manager.draw_ui(self.screen)
+                self.bullet_sprites.draw(self.screen)
+
                 self.all_sprites.draw(self.screen)
                 pygame.display.update()
 
@@ -112,19 +180,21 @@ class Gun(pygame.sprite.Sprite):
         self.original_gun_image = pygame.image.load("assets/gr3.png").convert_alpha()
         self.gun_image = pygame.transform.scale(self.original_gun_image, (20, 40))
         self.image = self.gun_image
-        self.rect = self.gun_image.get_rect(center=tank.rect.center)
+        self.rect = self.gun_image.get_rect(center = tank.rect.center)
         self.angle = 0
         self.rotation_speed = 0
         self.tank = tank
         self.gun_length = 40
-
-        self.original_gun_length = self.gun_length
+        self.gun_rotation_direction = 0
+        self.tip_offset = 30
+        self.original_gun_length = 0
         self.gun_back_start_time = 0
         self.gun_back_duration = 200
         self.can_shoot = True
         self.shoot_cooldown = 0
-        self.cooldown_duration = 3000
+        self.cooldown_duration = 500  #modifica el tiempo entre disparos del tanque
         self.last_update_time = pygame.time.get_ticks()
+
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -155,3 +225,89 @@ class Gun(pygame.sprite.Sprite):
             self.can_shoot = True
 
         self.last_update_time = pygame.time.get_ticks()
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x , y , angle):
+        super().__init__()
+        self.original_bullet_image = pygame.image.load("assets/bullet.png").convert_alpha()
+        self.bullet_image = pygame.transform.scale(self.original_bullet_image, (20,20))
+        self.image = self.bullet_image
+        self.angle = angle
+        self.speed = 4
+        self.tank = Tank(375, 300)
+        self.gun = Gun(self.tank)
+
+        angle_rad = math.radians(self.angle)
+
+        dx = (self.gun.gun_length+ self.gun.tip_offset - 32) * math.cos(angle_rad)
+        dy = -(self.gun.gun_length + self.gun.tip_offset - 32) * math.sin(angle_rad)
+
+
+        self.rect = self.bullet_image.get_rect(center=(x+dx, y+dy))
+        self.start_x = self.rect.centerx
+        self.start_y = self.rect.centery
+
+    def update(self):
+        angle_rad = math.radians(self.angle)
+        dx = self.speed * math.cos(angle_rad)
+        dy = -self.speed * math.sin(angle_rad)
+        self.rect.x += dx
+        self.rect.y += dy
+
+class WB(pygame.sprite.Sprite):
+    def __init__(self, x , y , angle):
+        super().__init__()
+        self.original_bullet_image = pygame.image.load("assets/WB.png").convert_alpha()
+        self.bullet_image = pygame.transform.scale(self.original_bullet_image, (20,20))
+        self.image = self.bullet_image
+        self.angle = angle
+        self.speed = 4
+        self.tank = Tank(375, 300)
+        self.gun = Gun(self.tank)
+
+
+        angle_rad = math.radians(self.angle)
+
+        dx = (self.gun.gun_length + self.gun.tip_offset - 32) * math.cos(angle_rad)
+        dy = -(self.gun.gun_length + self.gun.tip_offset - 32) * math.sin(angle_rad)
+
+
+        self.rect = self.bullet_image.get_rect(center=(x+dx, y+dy))
+        self.start_x = self.rect.centerx
+        self.start_y = self.rect.centery
+
+    def update(self):
+        angle_rad = math.radians(self.angle)
+        dx = self.speed * math.cos(angle_rad)
+        dy = -self.speed * math.sin(angle_rad)
+        self.rect.x += dx
+        self.rect.y += dy
+
+class BB(pygame.sprite.Sprite):
+    def __init__(self, x , y , angle):
+        super().__init__()
+        self.original_bullet_image = pygame.image.load("assets/BB.png").convert_alpha()
+        self.bullet_image = pygame.transform.scale(self.original_bullet_image, (20,20))
+        self.image = self.bullet_image
+        self.angle = angle
+        self.speed = 4
+        self.tank = Tank(375, 300)
+        self.gun = Gun(self.tank)
+
+        angle_rad = math.radians(self.angle)
+
+        dx = (self.gun.gun_length+ self.gun.tip_offset - 32) * math.cos(angle_rad)
+        dy = -(self.gun.gun_length + self.gun.tip_offset - 32) * math.sin(angle_rad)
+
+
+        self.rect = self.bullet_image.get_rect(center=(x+dx, y+dy))
+        self.start_x = self.rect.centerx
+        self.start_y = self.rect.centery
+
+    def update(self):
+        angle_rad = math.radians(self.angle)
+        dx = self.speed * math.cos(angle_rad)
+        dy = -self.speed * math.sin(angle_rad)
+        self.rect.x += dx
+        self.rect.y += dy
+
