@@ -25,7 +25,6 @@ class InGame:
                                                       manager=self.gui_manager)
         self.tank = Tank(375,300)
         self.gun = Gun(self.tank)
-
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.tank,self.gun)
         self.bullet_sprites = pygame.sprite.Group()
