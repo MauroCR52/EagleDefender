@@ -1,9 +1,21 @@
 {
     "users": [
         {
-            "username": "fernando",
-            "password": "maverick",
+            "username": "pepito",
+            "password": "123",
             "language": "es",
+            "profile_pic": "C:\\Users\\maulu\\fotos_prueba\\prueba1.png"
+        },
+        {
+            "username": "marco32",
+            "password": "1234",
+            "language": "en",
+            "profile_pic": "C:\\Users\\maulu\\fotos_prueba\\prueba1.png"
+        },
+        {
+            "username": "hola",
+            "password": "1",
+            "language": "en",
             "profile_pic": "assets/no_pic.png"
         }
     ]

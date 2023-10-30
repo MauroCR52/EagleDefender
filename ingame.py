@@ -7,9 +7,11 @@ import sys
 import os
 
 class InGame:
-    def __init__(self, ancho, alto):
+    def __init__(self, ancho, alto, rol, user):
         pygame.init()
         mixer.init()
+        self.rol = rol
+        self.user = user
         self.screen = pygame.display.set_mode((ancho, alto))
         pygame.display.set_caption("Seleccione Musica")
         self.background = pygame.image.load("Multimedia/Fondo desertico.jpg")

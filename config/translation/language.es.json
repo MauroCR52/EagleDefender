@@ -5,6 +5,7 @@
     "sign_up": "Registrarse",
     "create_account": "Crear cuenta",
     "upload_picture": "Agregar foto",
-    "error_picture": "Selecciona un archivo de formato .jpg o .png"
+    "error_picture": "Selecciona un archivo de formato .jpg o .png",
+    "role": "Seleccionar rol del Jugador 1"
   }
 }
