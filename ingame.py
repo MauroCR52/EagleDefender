@@ -5,6 +5,7 @@ from pygame import mixer
 import math
 import sys
 import os
+from tkinter import messagebox
 
 class InGame:
     def __init__(self, ancho, alto, rol, user):
@@ -14,7 +15,7 @@ class InGame:
         self.user = user
         self.screen = pygame.display.set_mode((ancho, alto))
         pygame.display.set_caption("Seleccione Musica")
-        self.background = pygame.image.load("Multimedia/Fondo desertico.jpg")
+        self.background = pygame.image.load("assets/ingame_bg.png")
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
         self.cmusica = "Musica"
         self.canciones = [archivo for archivo in os.listdir(self.cmusica) if archivo.endswith('.mp3')]#os.listdir(self.cmusica)
@@ -22,6 +23,34 @@ class InGame:
         self.list_box = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect(50, 50, 200, 30),
                                                       starting_option=self.canciones[0], options_list=self.canciones,
                                                       manager=self.gui_manager)
+
+        self.start = False
+        self.TILE_TYPES = 3
+        self.ROWS = 15
+        self.COLS = 23
+        self.TILE_SIZE = 768 // self.ROWS
+        self.current_tile = 0
+        self.img_list = []
+        for x in range(self.TILE_TYPES):
+            img = pygame.image.load(f'assets/blocks/full/{x}.png')
+            img2 = pygame.transform.scale(img, (self.TILE_SIZE, self.TILE_SIZE))
+            self.img_list.append(img2)
+        self.button_list = []
+        self.button_col = 0
+        self.button_row = 0
+        for i in range(len(self.img_list)):
+            tile_button = button.Button(1168 + (75 * self.button_col) + 50, 75 * self.button_row + 50, self.img_list[i], 1)
+            self.button_list.append(tile_button)
+            self.button_row += 1
+            if self.button_row == 1:
+                self.button_row += 0
+                self.button_col += 0
+
+        self.world_data = []
+        for row in range(self.ROWS):
+            r = [-1] * self.COLS
+            self.world_data.append(r)
+
         self.tank = Tank(375,300)
         self.gun = Gun(self.tank)
 
@@ -33,10 +62,30 @@ class InGame:
         self.max_disparosw = 0
         self.max_disparosb = 0
         self.fuente = pygame.font.Font(None, 25)
-        self.blanco = (255, 255, 255)
-        self.negro = (0, 0, 0)
+        self.white = (255, 255, 255)
+        self.black = (0, 0, 0)
+        self.wood_blocks = 10
+        self.steel_blocks = 10
+        self.concrete_blocks = 10
+
+        self.button_start = pygame.Rect(1220,280, 130, 70)
+        self.button_start_label = pygame_gui.elements.UIButton(relative_rect=self.button_start, text="Empezar", manager=self.gui_manager)
+
+
+    def draw_world(self):
+        for y, row in enumerate(self.world_data):
+            for x, tile in enumerate(row):
+                if tile >= 0:
+                    self.screen.blit(self.img_list[tile], (x * self.TILE_SIZE, y * self.TILE_SIZE))
+    def draw_grid(self):
+        for c in range(self.COLS+1):
+            pygame.draw.line(self.screen, self.white, (c * self.TILE_SIZE, 0), (c * self.TILE_SIZE, 766))
+        for c in range(self.ROWS+1):
+            pygame.draw.line(self.screen, self.white, (0, c * self.TILE_SIZE), (1173, c * self.TILE_SIZE))
 
     def begin(self):
+        self.button_start_label.disable()
+
         clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
         while True:
                 time_delta = clock.tick(60) / 1000.0  # Limita la velocidad de fotogramas a 60 FPS
@@ -59,12 +108,18 @@ class InGame:
 
                 self.all_sprites.update()
                 self.texto = f"Balas perdidas:{self.balas_perdidas}"
-                self.texto_renderizado = self.fuente.render(self.texto, True, self.negro)
+                self.counter_0 = f"= {self.wood_blocks}"
+                self.counter_1 = f"= {self.steel_blocks}"
+                self.counter_2 = f"= {self.concrete_blocks}"
+
+                self.texto_renderizado = self.fuente.render(self.texto, True, self.black)
+                self.c_0_render = self.fuente.render(self.counter_0, True, self.white)
+                self.c_1_render = self.fuente.render(self.counter_1, True, self.white)
+                self.c_2_render = self.fuente.render(self.counter_2, True, self.white)
 
                 self.gui_manager.update(time_delta)
 
-                self.screen.blit(self.background, (0, 0))
-                self.screen.blit(self.texto_renderizado, (10, 10))
+
 
                 if self.gun.can_shoot:
                     keys = pygame.key.get_pressed()
@@ -120,9 +175,58 @@ class InGame:
                         print(self.balas_perdidas)
                 self.bullet_sprites.update()
 
+                self.screen.blit(self.background, (0, 0))
+                self.draw_grid()
+                self.draw_world()
+                self.screen.blit(self.texto_renderizado, (10, 10))
+                self.screen.blit(self.c_0_render, (1280, 65))
+                self.screen.blit(self.c_1_render, (1280, 140))
+                self.screen.blit(self.c_2_render, (1280, 215))
+
                 # Dibuja los elementos de la interfaz de usuario de pygame_gui
                 self.gui_manager.draw_ui(self.screen)
                 self.bullet_sprites.draw(self.screen)
+
+                button_count = 0
+                for button_count, i in enumerate(self.button_list):
+                    if i.draw(self.screen):
+                        self.current_tile = button_count
+
+                pygame.draw.rect(self.screen, (196, 12, 12), self.button_list[self.current_tile].rect, 3)
+                pos = pygame.mouse.get_pos()
+                x = (pos[0]) // self.TILE_SIZE
+                y = pos[1] // self.TILE_SIZE
+
+                #revisar que el mouse se encuentre dentro de la matriz
+                if pos[0] < 1173 and pos[1] < 766:
+                    if pygame.mouse.get_pressed()[0] == 1:
+                        if self.world_data[y][x] != self.current_tile:
+                            # si el bloque aun no ha llegado a 0
+                            if (self.current_tile == 0 and self.wood_blocks != 0):
+                                if self.world_data[y][x] == -1:
+                                    self.world_data[y][x] = self.current_tile
+                                    self.wood_blocks -= 1
+                            elif (self.current_tile == 1 and self.steel_blocks != 0):
+                                if self.world_data[y][x] == -1:
+                                    self.world_data[y][x] = self.current_tile
+                                    self.steel_blocks -= 1
+                            elif (self.current_tile == 2 and self.concrete_blocks != 0):
+                                if self.world_data[y][x] == -1:
+                                    self.world_data[y][x] = self.current_tile
+                                    self.concrete_blocks -= 1
+
+                    if pygame.mouse.get_pressed()[2] == 1:
+                        if self.world_data[y][x] == 0:
+                            self.wood_blocks += 1
+                        if self.world_data[y][x] == 1:
+                            self.steel_blocks += 1
+                        if self.world_data[y][x] == 2:
+                            self.concrete_blocks += 1
+                        self.button_start_label.disable()
+                        self.world_data[y][x] = -1
+
+                if (self.wood_blocks == 0 and self.steel_blocks == 0 and self.concrete_blocks == 0):
+                    self.button_start_label.enable()
 
                 self.all_sprites.draw(self.screen)
                 pygame.display.update()
