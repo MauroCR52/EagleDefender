@@ -107,6 +107,18 @@ class InGame:
                     self.gui_manager.process_events(event)  # Actualiza el administrador de interfaz de usuario de pygame_gui
 
                 self.all_sprites.update()
+                self.bullet_sprites.update()
+
+                for bullet in self.bullet_sprites:
+                    for y, row in enumerate(self.world_data):
+                        for x, tile in enumerate(row):
+                            if tile >= 0:
+                                tile_rect = pygame.Rect(x * self.TILE_SIZE, y * self.TILE_SIZE, self.TILE_SIZE,
+                                                        self.TILE_SIZE)
+                                if bullet.rect.colliderect(tile_rect):
+                                    self.world_data[y][x] = -1
+                                    bullet.kill()
+
                 self.texto = f"Balas perdidas:{self.balas_perdidas}"
                 self.counter_0 = f"= {self.wood_blocks}"
                 self.counter_1 = f"= {self.steel_blocks}"
