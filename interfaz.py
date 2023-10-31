@@ -3,7 +3,7 @@ import sys
 import pygame
 import pygame_gui
 from pygame import mixer
-from pygame_gui.elements import UIImage
+from pygame_gui.elements import UIImage, UITextBox
 from pygame_gui.windows import UIFileDialog
 from pygame_gui.core.utility import create_resource_path
 from tkinter import messagebox
