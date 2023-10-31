@@ -46,6 +46,7 @@ class InGame:
                 self.button_row += 0
                 self.button_col += 0
 
+
         self.world_data = []
         for row in range(self.ROWS):
             r = [-1] * self.COLS
@@ -53,7 +54,6 @@ class InGame:
 
         self.tank = Tank(375,300)
         self.gun = Gun(self.tank)
-
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.tank,self.gun)
         self.bullet_sprites = pygame.sprite.Group()
@@ -68,7 +68,7 @@ class InGame:
         self.steel_blocks = 10
         self.concrete_blocks = 10
 
-        self.button_start = pygame.Rect(1220,280, 130, 70)
+        self.button_start = pygame.Rect(1220, 280, 130, 70)
         self.button_start_label = pygame_gui.elements.UIButton(relative_rect=self.button_start, text="Empezar", manager=self.gui_manager)
 
 
