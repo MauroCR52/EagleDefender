@@ -380,6 +380,7 @@ class Bullet(pygame.sprite.Sprite):
         self.speed = 4
         self.tank = Tank(375, 300)
         self.gun = Gun(self.tank)
+        self.bullet_type = "fire_bullet"
 
         angle_rad = math.radians(self.angle)
 
@@ -437,6 +438,7 @@ class BB(pygame.sprite.Sprite):
         self.speed = 4
         self.tank = Tank(375, 300)
         self.gun = Gun(self.tank)
+        self.bullet_type = "bomb_bullet"
 
         angle_rad = math.radians(self.angle)
 
