@@ -9,7 +9,6 @@ from pygame_gui.core.utility import create_resource_path
 from tkinter import messagebox
 from ingame import InGame
 
-
 class Login_window:
     def __init__(self, ancho, alto):
         pygame.init()
@@ -272,7 +271,7 @@ class Menu_window:
         pygame.init()
         mixer.init()
         self.screen = pygame.display.set_mode((ancho, alto))
-        pygame.display.set_caption("Menu")
+        pygame.display.set_caption("Ventana de Ayuda")
         self.background = pygame.image.load("assets/mainmenu_bg.png")
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
 
@@ -281,10 +280,11 @@ class Menu_window:
         # Buttons
         self.button_play = pygame.Rect(395,200, 160, 90)
         self.button_logout = pygame.Rect(50,700, 140, 50)
+        self.button_help = pygame.Rect(395, 400, 160, 90)
 
         self.button_play_label = pygame_gui.elements.UIButton(relative_rect=self.button_play, text="Jugar", manager=self.gui_manager)
         self.button_logout_label = pygame_gui.elements.UIButton(relative_rect=self.button_logout, text="Cerrar Sesion", manager=self.gui_manager)
-
+        self.button_help_label= pygame_gui.elements.UIButton(relative_rect=self.button_help, text="Ayuda", manager=self.gui_manager)
         # Nombre de usuario
         self.username = pygame.Rect(15, 150, 140, 50)
         self.username_label = pygame_gui.elements.UILabel(relative_rect=self.username, text=self.user, manager=self.gui_manager)
@@ -347,13 +347,18 @@ class Menu_window:
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.button_play:
                         pygame.mixer.music.stop()
-                        role = Role_window(1366, 768, self.user)
-                        role.begin()
+                        game= InGame(1366, 768)
+                        game.begin()
 
                     if event.ui_element == self.button_logout:
                         pygame.mixer.music.stop()
                         login_window = Login_window(1366, 768)
                         login_window.begin()
+
+                    if event.ui_element == self.button_help:
+                        pygame.mixer.music.stop()
+                        help= help_window(1366, 768)
+                        help.begin()
 
                 # Pasar eventos de pygame a pygame_gui
                 self.gui_manager.process_events(event)            # Actualiza el administrador de interfaz de usuario de pygame_gui
@@ -366,81 +371,21 @@ class Menu_window:
 
             pygame.display.update()
 
-class Role_window:
-    def __init__(self, ancho, alto, user):
+class help_window:
+
+    def __init__(self, ancho, alto):
         pygame.init()
         mixer.init()
         self.screen = pygame.display.set_mode((ancho, alto))
-        pygame.display.set_caption("Role")
-        self.background = pygame.image.load("assets/rol_bg.png")
+        pygame.display.set_caption("Menu")
+        self.background = pygame.image.load("assets/AyudaV.jpg")
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
-
-        self.user = user
-
-        # Buttons
-        self.button_attacker = pygame.Rect(385,400, 160, 90)
-        self.button_defender = pygame.Rect(910,400, 160, 90)
-        self.button_return = pygame.Rect(35,695, 140, 50)
-
-
-        self.button_attacker_label = pygame_gui.elements.UIButton(relative_rect=self.button_attacker, text="Atacante", manager=self.gui_manager)
-        self.button_defender_label = pygame_gui.elements.UIButton(relative_rect=self.button_defender, text="Defensor", manager=self.gui_manager)
-        self.button_return_label = pygame_gui.elements.UIButton(relative_rect=self.button_return, text="Regresar", manager=self.gui_manager)
-
-        # Nombre de usuario
-        self.username = pygame.Rect(15, 150, 140, 50)
-        self.username_label = pygame_gui.elements.UILabel(relative_rect=self.username, text=self.user, manager=self.gui_manager)
-
-        self.max_image_display_dimensions = (120, 120)
-
-        self.text_rol = UITextBox(
-        html_text="language.role",
-        relative_rect=pygame.Rect(550, 200, 300, 50),
-        manager=self.gui_manager)
 
     def begin(self):
         clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
-        with open('config/users.json','r') as file:
-            data = json.load(file)
-            users = data['users']
-            for user in users:
-                if user['username'] == self.user:
-                    if user['language'] == 'es':
-                        self.gui_manager.set_locale('es')
-                    if user['language'] == 'en':
-                        self.gui_manager.set_locale('en')
-                    image_path = user['profile_pic']
-                    try:
-                        loaded_image = pygame.image.load(image_path).convert_alpha()
-                        image_rect = loaded_image.get_rect()
-                        aspect_ratio = image_rect.width / image_rect.height
-                        need_to_scale = False
-                        if image_rect.width > self.max_image_display_dimensions[0]:
-                            image_rect.width = self.max_image_display_dimensions[0]
-                            image_rect.height = int(image_rect.width / aspect_ratio)
-                            need_to_scale = True
-
-                        if image_rect.height > self.max_image_display_dimensions[1]:
-                            image_rect.height = self.max_image_display_dimensions[1]
-                            image_rect.width = int(image_rect.height * aspect_ratio)
-                            need_to_scale = True
-
-                        if need_to_scale:
-                            loaded_image = pygame.transform.smoothscale(loaded_image,
-                                                                        image_rect.size)
-
-                        image_rect.center = (90, 90)
-                        self.pic_path = image_path
-                        self.display_loaded_image = UIImage(relative_rect=image_rect,
-                                                            image_surface=loaded_image,
-                                                            manager=self.gui_manager)
-
-                    except pygame.error:
-                        pass
 
         while True:
             time_delta = clock.tick(60) / 1000.0  # Limita la velocidad de fotogramas a 60 FPS
-
 
             #salir del juego con la ventana
             for event in pygame.event.get():
@@ -448,31 +393,6 @@ class Role_window:
                     pygame.quit()
                     sys.exit()
 
-                # Salir del juego con esc
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                        sys.exit()
-
-                if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == self.button_attacker:
-                        pygame.mixer.music.stop()
-                        game = InGame(1366, 768, "attacker", self.user)
-                        game.begin()
-
-                    if event.ui_element == self.button_defender:
-                        pygame.mixer.music.stop()
-                        game = InGame(1366, 768, "defender", self.user)
-                        game.begin()
-
-                    if event.ui_element == self.button_return:
-                        pygame.mixer.music.stop()
-                        menu = Menu_window(1366, 768, self.user)
-                        menu.begin()
-
-
-                # Pasar eventos de pygame a pygame_gui
-                self.gui_manager.process_events(event)            # Actualiza el administrador de interfaz de usuario de pygame_gui
             self.gui_manager.update(time_delta)
 
             self.screen.blit(self.background, (0, 0))

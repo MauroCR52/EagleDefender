@@ -5,7 +5,10 @@ from pygame import mixer
 import math
 import sys
 import os
-
+from mutagen.mp3 import MP3
+import time
+import threading
+from tkinter import messagebox
 class InGame:
     def __init__(self, ancho, alto, rol, user):
         pygame.init()
@@ -18,13 +21,12 @@ class InGame:
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
         self.cmusica = "Musica"
         self.canciones = [archivo for archivo in os.listdir(self.cmusica) if archivo.endswith('.mp3')]#os.listdir(self.cmusica)
-        self.options = ["Option 1", "Option 2"]
+
         self.list_box = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect(50, 50, 200, 30),
                                                       starting_option=self.canciones[0], options_list=self.canciones,
                                                       manager=self.gui_manager)
         self.tank = Tank(375,300)
         self.gun = Gun(self.tank)
-
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.tank,self.gun)
         self.bullet_sprites = pygame.sprite.Group()
@@ -35,9 +37,41 @@ class InGame:
         self.fuente = pygame.font.Font(None, 25)
         self.blanco = (255, 255, 255)
         self.negro = (0, 0, 0)
+        self.inicio= time.time()
+        self.texto_cronometro = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((10, 10), (1300, 40)),text="Tiempo: 00:00",
+            manager=self.gui_manager)
+        self.crono = pygame.time.Clock()
+        self.inicio = None
+        self.seleccion_actual = self.canciones[0]
 
+        # Inicializa el cronómetro
+
+    def actualizar_cronometro(self, seleccion):
+        while True:
+            pygame.time.wait(100)
+            if self.inicio is not None and seleccion == self.seleccion_actual:
+                tiempo_transcurrido = (pygame.time.get_ticks() / 1000) - self.inicio
+
+                # Calcula los minutos y segundos
+                minutos = int(tiempo_transcurrido // 60)
+                segundos = int(tiempo_transcurrido % 60)
+
+                # Formatea el tiempo en minutos y segundos
+                tiempo_formateado = f"Tiempo: {minutos:02d}:{segundos:02d}"
+
+                self.texto_cronometro.set_text(tiempo_formateado)
+
+                if tiempo_transcurrido >= self.duraA:
+                    pygame.mixer.music.stop()
+                    self.texto_cronometro.set_text(f"{tiempo_formateado}")
+                    self.inicio = None
+                    messagebox.showinfo("Se acabo el tiempo", "El tiempo de la partida se ha agotado")
     def begin(self):
+        cronometro_thread = threading.Thread(target=self.actualizar_cronometro, args=(self.seleccion_actual,))
+        cronometro_thread.daemon = True
+        cronometro_thread.start()
         clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
+
         while True:
                 time_delta = clock.tick(60) / 1000.0  # Limita la velocidad de fotogramas a 60 FPS
 
@@ -52,6 +86,12 @@ class InGame:
                         self.audioplay = os.path.join(self.cmusica, self.seleccion)
                         pygame.mixer.music.load(self.audioplay)
                         pygame.mixer.music.play()
+                        self.audioD= MP3(self.audioplay)
+                        self.duraA= self.audioD.info.length
+                        self.inicio = pygame.time.get_ticks() / 1000
+
+                        # Actualiza Pygame GUI
+                    self.gui_manager.update(1 / 60.0)
 
 
                     # Pasar eventos de pygame a pygame_gui

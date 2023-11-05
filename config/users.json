@@ -17,6 +17,12 @@
             "password": "1",
             "language": "en",
             "profile_pic": "assets/no_pic.png"
+        },
+        {
+            "username": "pepe",
+            "password": "123",
+            "language": "es",
+            "profile_pic": "assets/no_pic.png"
         }
     ]
 }
