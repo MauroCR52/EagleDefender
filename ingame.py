@@ -614,6 +614,14 @@ class Gun(pygame.sprite.Sprite):
             self.rotation_speed = 2
         elif keys[pygame.K_x]:
             self.rotation_speed = -2
+        elif keys[pygame.K_UP]:
+            self.angle = 90
+        elif keys[pygame.K_DOWN]:
+            self.angle = 270
+        elif keys[pygame.K_LEFT]:
+            self.angle = 180
+        elif keys[pygame.K_RIGHT]:
+            self.angle = 0
         else:
             self.rotation_speed = 0
 
@@ -652,11 +660,10 @@ class Bullet(pygame.sprite.Sprite):
 
         angle_rad = math.radians(self.angle)
 
-        dx = (self.gun.gun_length+ self.gun.tip_offset - 32) * math.cos(angle_rad)
-        dy = -(self.gun.gun_length + self.gun.tip_offset - 32) * math.sin(angle_rad)
+        dx = (self.gun.gun_length + self.gun.tip_offset - 82) * math.cos(angle_rad)
+        dy = -(self.gun.gun_length + self.gun.tip_offset - 82) * math.sin(angle_rad)
 
-
-        self.rect = self.bullet_image.get_rect(center=(x+dx, y+dy))
+        self.rect = self.bullet_image.get_rect(center=(x + dx, y + dy))
         self.start_x = self.rect.centerx
         self.start_y = self.rect.centery
 
@@ -682,8 +689,8 @@ class WB(pygame.sprite.Sprite):
 
         angle_rad = math.radians(self.angle)
 
-        dx = (self.gun.gun_length + self.gun.tip_offset - 32) * math.cos(angle_rad)
-        dy = -(self.gun.gun_length + self.gun.tip_offset - 32) * math.sin(angle_rad)
+        dx = (self.gun.gun_length + self.gun.tip_offset - 82) * math.cos(angle_rad)
+        dy = -(self.gun.gun_length + self.gun.tip_offset - 82) * math.sin(angle_rad)
 
 
         self.rect = self.bullet_image.get_rect(center=(x+dx, y+dy))
@@ -711,8 +718,8 @@ class BB(pygame.sprite.Sprite):
 
         angle_rad = math.radians(self.angle)
 
-        dx = (self.gun.gun_length+ self.gun.tip_offset - 32) * math.cos(angle_rad)
-        dy = -(self.gun.gun_length + self.gun.tip_offset - 32) * math.sin(angle_rad)
+        dx = (self.gun.gun_length+ self.gun.tip_offset - 82) * math.cos(angle_rad)
+        dy = -(self.gun.gun_length + self.gun.tip_offset - 82) * math.sin(angle_rad)
 
 
         self.rect = self.bullet_image.get_rect(center=(x+dx, y+dy))
