@@ -4,18 +4,18 @@
             "username": "pepito",
             "password": "123",
             "language": "es",
-            "profile_pic": "C:\\Users\\maulu\\fotos_prueba\\prueba1.png"
+            "profile_pic": "Multimedia/Fotooooooo.jpg"
         },
         {
-            "username": "marco32",
+            "username": "marco",
+            "password": "123",
+            "language": "en",
+            "profile_pic": "Multimedia/download_5.jpg"
+        },
+        {
+            "username": "juan",
             "password": "1234",
-            "language": "en",
-            "profile_pic": "C:\\Users\\maulu\\fotos_prueba\\prueba1.png"
-        },
-        {
-            "username": "hola",
-            "password": "1",
-            "language": "en",
+            "language": "es",
             "profile_pic": "assets/no_pic.png"
         }
     ]
