@@ -6,7 +6,7 @@ import math
 import sys
 import os
 from tkinter import messagebox
-
+Bullet_type = ""
 class InGame:
     def __init__(self, ancho, alto, rol, user):
         pygame.init()
@@ -25,7 +25,7 @@ class InGame:
                                                       manager=self.gui_manager)
 
         self.start = False
-        self.TILE_TYPES = 3
+        self.TILE_TYPES = 7
         self.ROWS = 15
         self.COLS = 23
         self.TILE_SIZE = 768 // self.ROWS
@@ -84,6 +84,7 @@ class InGame:
             pygame.draw.line(self.screen, self.white, (0, c * self.TILE_SIZE), (1173, c * self.TILE_SIZE))
 
     def begin(self):
+        global Bullet_type
         self.button_start_label.disable()
 
         clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
@@ -116,8 +117,30 @@ class InGame:
                                 tile_rect = pygame.Rect(x * self.TILE_SIZE, y * self.TILE_SIZE, self.TILE_SIZE,
                                                         self.TILE_SIZE)
                                 if bullet.rect.colliderect(tile_rect):
-                                    self.world_data[y][x] = -1
+                                    if self.world_data[y][x] == 0:
+                                        self.world_data[y][x] = -1
+                                    elif Bullet_type == "water" and self.world_data[y][x] == 1:
+                                        self.world_data[y][x] = 5
+                                    elif Bullet_type == "water" and self.world_data[y][x] == 5:
+                                        self.world_data[y][x] = -1
+                                    elif Bullet_type == "water" and self.world_data[y][x] == 2:
+                                        self.world_data[y][x] = 4
+                                    elif Bullet_type == "water" and self.world_data[y][x] == 4:
+                                        self.world_data[y][x] = 6
+                                    elif Bullet_type == "water" and self.world_data[y][x] == 6:
+                                        self.world_data[y][x] = -1
+                                    elif Bullet_type == "fire" and self.world_data[y][x] == 1:
+                                        self.world_data[y][x] = -1
+                                    elif Bullet_type == "fire" and self.world_data[y][x] == 2:
+                                        self.world_data[y][x] = 6
+                                    elif Bullet_type == "fire" and self.world_data[y][x] == 6:
+                                        self.world_data[y][x] = -1
+                                    elif Bullet_type == "bomb":
+                                        self.world_data[y][x] = -1
+
+
                                     bullet.kill()
+
 
                 self.texto = f"Balas perdidas:{self.balas_perdidas}"
                 self.counter_0 = f"= {self.wood_blocks}"
@@ -136,6 +159,7 @@ class InGame:
                 if self.gun.can_shoot:
                     keys = pygame.key.get_pressed()
                     if keys[pygame.K_SPACE] and self.max_disparosf < 5:
+                        Bullet_type = "fire"
                         bullet_angle = self.gun.angle
                         bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
                             math.radians(bullet_angle))
@@ -154,6 +178,7 @@ class InGame:
                 if self.gun.can_shoot:
                     keys = pygame.key.get_pressed()
                     if keys[pygame.K_c] and self.max_disparosw < 5:
+                        Bullet_type = "water"
                         bullet_angle = self.gun.angle
                         bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
                             math.radians(bullet_angle))
@@ -172,6 +197,7 @@ class InGame:
                 if self.gun.can_shoot:
                     keys = pygame.key.get_pressed()
                     if keys[pygame.K_v] and self.max_disparosb < 5:
+                        Bullet_type = "bomb"
                         bullet_angle = self.gun.angle
                         bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
                             math.radians(bullet_angle))
@@ -382,7 +408,7 @@ class WB(pygame.sprite.Sprite):
         self.speed = 4
         self.tank = Tank(375, 300)
         self.gun = Gun(self.tank)
-
+        self.bullet_type = "water"
 
         angle_rad = math.radians(self.angle)
 
