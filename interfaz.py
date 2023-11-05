@@ -9,7 +9,6 @@ from pygame_gui.core.utility import create_resource_path
 from tkinter import messagebox
 from ingame import InGame
 
-
 class Login_window:
     def __init__(self, ancho, alto):
         pygame.init()
@@ -62,6 +61,7 @@ class Login_window:
                         signup_window.begin()
 
                 if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
+                    global language_set
                     if event.text == 'pygame-gui.English':
                         self.gui_manager.set_locale('en')
                     elif event.text == 'pygame-gui.Spanish':

@@ -11,6 +11,16 @@ import time
 import threading
 
 from tkinter import messagebox
+
+from pygame_gui import UIManager, PackageResource
+
+from pygame_gui.elements import UIWindow
+from pygame_gui.elements import UIButton
+from pygame_gui.elements import UISelectionList
+
+
+
+
 Bullet_type = ""
 class InGame:
     def __init__(self, ancho, alto, rol, user1, user2):
@@ -72,6 +82,14 @@ class InGame:
         self.wood_blocks = 10
         self.steel_blocks = 10
         self.concrete_blocks = 10
+
+        self.destroyed_wood_blocks = 0
+        self.destroyed_steel_blocks = 0
+        self.destroyed_concrete_blocks = 0
+
+        self.destroyed_blocks = 0
+        self.score = 0
+
 
         self.button_start = pygame.Rect(1220, 670, 130, 70)
         self.button_start_label = pygame_gui.elements.UIButton(relative_rect=self.button_start, text="Empezar", manager=self.gui_manager)
@@ -268,11 +286,19 @@ class InGame:
 
                                     if self.world_data[y][x] == 0:
                                         self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_wood_blocks += 1
+                                        self.score += 5
+
                                     elif Bullet_type == "water" and self.world_data[y][x] == 1:
                                         self.world_data[y][x] = 5
 
                                     elif Bullet_type == "water" and self.world_data[y][x] == 5:
                                         self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_steel_blocks += 1
+                                        self.score += 10
+
                                     elif Bullet_type == "water" and self.world_data[y][x] == 2:
                                         self.world_data[y][x] = 4
 
@@ -281,8 +307,22 @@ class InGame:
 
                                     elif Bullet_type == "water" and self.world_data[y][x] == 6:
                                         self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_concrete_blocks += 1
+                                        self.score += 15
+
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 1:
                                         self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_steel_blocks += 1
+                                        self.score += 10
+
+                                    elif Bullet_type == "fire" and self.world_data[y][x] == 5:
+                                        self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_concrete_blocks += 1
+                                        self.score += 15
+
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 2:
                                         self.world_data[y][x] = 6
 
@@ -294,23 +334,74 @@ class InGame:
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 6:
                                         self.world_data[y][x] = -1
-                                    elif Bullet_type == "bomb":
-                                        self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_concrete_blocks += 1
+                                        self.score += 15
 
+                                    elif Bullet_type == "bomb" and self.world_data[y][x] == 1:
+                                        self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_steel_blocks += 1
+                                        self.score += 10
+
+                                    elif Bullet_type == "bomb" and self.world_data[y][x] == 2:
+                                        self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_concrete_blocks += 1
+                                        self.score += 15
+
+                                    elif Bullet_type == "bomb" and self.world_data[y][x] == 4:
+                                        self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_steel_blocks += 1
+                                        self.score += 10
+
+                                    elif Bullet_type == "bomb" and self.world_data[y][x] == 5:
+                                        self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_concrete_blocks += 1
+                                        self.score += 15
+
+                                    elif Bullet_type == "bomb" and self.world_data[y][x] == 6:
+                                        self.world_data[y][x] = -1
+                                        self.destroyed_blocks += 1
+                                        self.destroyed_concrete_blocks += 1
+                                        self.score += 15
 
                                     bullet.kill()
 
 
 
-                self.texto = f"Balas perdidas:{self.balas_perdidas}"
-                self.counter_0 = f"= {self.wood_blocks}"
-                self.counter_1 = f"= {self.steel_blocks}"
-                self.counter_2 = f"= {self.concrete_blocks}"
+                self.texto = f"Balas\nperdidas: {self.balas_perdidas}"
 
-                self.texto_renderizado = self.fuente.render(self.texto, True, self.black)
+                if self.start != True:
+                    self.counter_0 = f"= {self.wood_blocks}"
+                    self.counter_1 = f"= {self.steel_blocks}"
+                    self.counter_2 = f"= {self.concrete_blocks}"
+                if self.start == True:
+                    self.counter_0 = f"= {self.destroyed_wood_blocks}"
+                    self.counter_1 = f"= {self.destroyed_steel_blocks}"
+                    self.counter_2 = f"= {self.destroyed_concrete_blocks}"
+
+
+                self.counter_destroyed = f"Bloques\ndestruidos: {self.destroyed_blocks}"
+                self.text_score = f"Puntaje: {self.score}"
+
+                self.water_counter = f"= {self.water_bullets_rest}"
+                self.fire_counter = f"= {self.fire_bullets_rest}"
+                self.bomb_counter = f"= {self.bomb_bullets_rest}"
+
+
+                self.texto_renderizado = self.fuente.render(self.texto, True, self.white)
                 self.c_0_render = self.fuente.render(self.counter_0, True, self.white)
                 self.c_1_render = self.fuente.render(self.counter_1, True, self.white)
                 self.c_2_render = self.fuente.render(self.counter_2, True, self.white)
+                self.c_destroyed = self.fuente.render(self.counter_destroyed, True, self.white)
+                self.total_score = self.fuente.render(self.text_score, True, self.white)
+
+                self.c_water = self.fuente.render(self.water_counter, True, self.white)
+                self.c_fire = self.fuente.render(self.fire_counter, True, self.white)
+                self.c_bomb = self.fuente.render(self.bomb_counter, True, self.white)
 
                 self.gui_manager.update(time_delta)
 
@@ -380,10 +471,22 @@ class InGame:
                 self.screen.blit(self.background, (0, 0))
                 self.draw_grid()
                 self.draw_world()
-                self.screen.blit(self.texto_renderizado, (10, 10))
+                self.screen.blit(self.texto_renderizado, (1218, 280))
                 self.screen.blit(self.c_0_render, (1280, 65))
                 self.screen.blit(self.c_1_render, (1280, 140))
                 self.screen.blit(self.c_2_render, (1280, 215))
+                self.screen.blit(self.c_destroyed, (1218, 330))
+                self.screen.blit(self.total_score, (1218, 390))
+                self.screen.blit(self.eagle_img, self.eagle_rect)
+                self.screen.blit(self.fire_img, self.fire_rect)
+                self.screen.blit(self.water_img, self.water_rect)
+                self.screen.blit(self.bomb_img, self.bomb_rect)
+
+                self.screen.blit(self.c_fire, (1280, 450))
+                self.screen.blit(self.c_water, (1280, 520))
+                self.screen.blit(self.c_bomb, (1280, 590))
+
+
 
                 # Dibuja los elementos de la interfaz de usuario de pygame_gui
                 self.gui_manager.draw_ui(self.screen)
@@ -545,6 +648,7 @@ class Bullet(pygame.sprite.Sprite):
         self.tank = Tank(375, 300)
         self.gun = Gun(self.tank)
         self.bullet_type = "fire_bullet"
+        self.max_distance = 8 * 51.2
 
         angle_rad = math.radians(self.angle)
 
