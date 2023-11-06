@@ -736,10 +736,10 @@ class help_window:
 
         self.screen = pygame.display.set_mode((ancho, alto))
         pygame.display.set_caption("Help")
-        self.background = pygame.image.load("assets/help_bg.png")
+        self.background = pygame.image.load("assets/PantallaAyuda.jpg")
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
 
-        self.button_return = pygame.Rect(1000, 610, 140, 60)
+        self.button_return = pygame.Rect(1200, 610, 140, 60)
 
         self.button_return_label = pygame_gui.elements.UIButton(relative_rect=self.button_return, text="Regresar",
                                                               manager=self.gui_manager)
