@@ -8,6 +8,10 @@ from pygame_gui.windows import UIFileDialog
 from pygame_gui.core.utility import create_resource_path
 from tkinter import messagebox
 from ingame import InGame
+from pygame_gui.elements import UIWindow
+from pygame_gui.elements import UIButton
+from pygame_gui.elements import UISelectionList
+import os
 
 class Login_window:
     def __init__(self, ancho, alto):
@@ -242,7 +246,8 @@ class SignUp_Window:
                 "username": self.username_entry.get_text(),
                 "password": self.password_entry.get_text(),
                 "language": self.gui_manager.get_locale(),
-                "profile_pic": self.pic_path
+                "profile_pic": self.pic_path,
+                "songs": []
             }
             users = data["users"]
             user_exist = next((user for user in users if user["username"] == new_user["username"]), None)
@@ -252,7 +257,7 @@ class SignUp_Window:
                 data["users"].append(new_user)
                 with open('config/users.json', 'w') as archivo:
                     json.dump(data, archivo, indent=4)
-                messagebox.showinfo("Exito", "Su cuenta se creÃ³ exitosamente")
+                messagebox.showinfo("Exito", "Su cuenta se creo exitosamente")
                 login_window = Login_window(1366, 768)
                 login_window.begin()
 
@@ -295,6 +300,76 @@ class Menu_window:
         self.max_image_display_dimensions = (120, 120)
 
 
+        self.playlist = pygame_gui.elements.UISelectionList(pygame.Rect(810, 170, 310, 400),
+                        item_list=[],
+                        manager=self.gui_manager,
+                        allow_multi_select=False)
+
+        self.button_addSong = pygame.Rect(810, 600, 130, 40)
+        self.button_addSong_label = pygame_gui.elements.UIButton(relative_rect=self.button_addSong, text="Añadir", manager=self.gui_manager)
+
+        self.button_remove = pygame.Rect(990, 600, 130, 40)
+        self.button_remove_label = pygame_gui.elements.UIButton(relative_rect=self.button_remove, text="Quitar", manager=self.gui_manager)
+
+        self.song_window = None
+        self.button_song = None
+        self.song_selection = None
+
+        self.namesongs = os.listdir("Musica")
+        self.songs = [archivo for archivo in self.namesongs if archivo.endswith(".mp3")]
+
+    def open_song_list(self):
+        self.song_window = UIWindow(pygame.Rect((500, 150), (380, 360)), resizable= False,
+                                    window_display_title= "Select Song", manager=self.gui_manager,
+                                    draggable=False)
+
+        self.button_song = UIButton(pygame.Rect(80, 20, 174, 30), 'Aceptar',
+                          manager=self.gui_manager,
+                          container=self.song_window)
+
+        self.song_selection = UISelectionList(pygame.Rect(20, 70, 300, 200),
+                                         item_list=self.songs,
+                                         manager=self.gui_manager,
+                                         container=self.song_window,
+                                         allow_multi_select=False)
+
+        self.button_addSong_label.disable()
+        self.button_logout_label.disable()
+        self.button_help_label.disable()
+        self.button_play_label.disable()
+        self.button_remove_label.disable()
+        #self.playlist.disable()
+
+    def addSong(self):
+        with open('config/users.json', 'r') as file:
+            data = json.load(file)
+            users = data['users']
+            for user in users:
+                if user['username'] == self.user:
+                    if self.selected_addsong in user['songs']:
+                        messagebox.showinfo("Error", "Ya tienes esta canción en tu playlist")
+                    else:
+                        self.playlist.add_items([self.selected_addsong])
+                        user['songs'].append(self.selected_addsong)
+                        with open('config/users.json', 'w') as archivo:
+                            json.dump(data, archivo, indent=4)
+
+    def removeSong(self):
+        # Cargar el archivo JSON
+        with open('config/users.json', 'r') as file:
+            data = json.load(file)
+
+        for user in data['users']:
+            if user['username'] == self.user:
+                songs = user['songs']
+                if self.selected_removesong in songs:
+                    self.playlist.remove_items([self.selected_removesong])
+                    songs.remove(self.selected_removesong)  # Eliminar la canción de la lista
+                break
+
+        # Guardar los cambios en el archivo JSON
+        with open('config/users.json', 'w') as file:
+            json.dump(data, file, indent=4)
 
     def begin(self):
         clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
@@ -303,6 +378,8 @@ class Menu_window:
             users = data['users']
             for user in users:
                 if user['username'] == self.user:
+                    user_songs = user['songs']
+                    self.playlist.add_items(user_songs)
                     image_path = user['profile_pic']
                     try:
                         loaded_image = pygame.image.load(image_path).convert_alpha()
@@ -347,11 +424,28 @@ class Menu_window:
                         pygame.quit()
                         sys.exit()
 
+                if (event.type == pygame_gui.UI_WINDOW_CLOSE
+                        and event.ui_element == self.song_window):
+                    self.button_addSong_label.enable()
+                    self.button_logout_label.enable()
+                    self.button_help_label.enable()
+                    self.button_play_label.enable()
+                    self.button_remove_label.enable()
+                    self.playlist.enable()
+
+                    self.song_window = None
+                    self.button_song = None
+                    self.song_selection = None
+
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.button_play:
-                        pygame.mixer.music.stop()
-                        login2 = Login_player2_window(1366, 768, self.user)
-                        login2.begin()
+                        if self.playlist.item_list.__len__() == 0:
+                            messagebox.showinfo("Error", "Debes tener al menos 1 cancion en tu playlist")
+
+                        else:
+                            pygame.mixer.music.stop()
+                            login2 = Login_player2_window(1366, 768, self.user)
+                            login2.begin()
 
                     if event.ui_element == self.button_logout:
                         pygame.mixer.music.stop()
@@ -362,6 +456,21 @@ class Menu_window:
                         pygame.mixer.music.stop()
                         help = help_window(1366, 768, self.user)
                         help.begin()
+
+                    if event.ui_element == self.button_addSong_label:
+                        self.open_song_list()
+
+                    if event.ui_element == self.button_song:
+                        self.selected_addsong = self.song_selection.get_single_selection()
+
+                        if self.selected_addsong != None:
+                            self.addSong()
+
+                    if event.ui_element == self.button_remove_label:
+                        self.selected_removesong = self.playlist.get_single_selection()
+
+                        if self.selected_removesong != None:
+                            self.removeSong()
 
                 # Pasar eventos de pygame a pygame_gui
                 self.gui_manager.process_events(event)            # Actualiza el administrador de interfaz de usuario de pygame_gui

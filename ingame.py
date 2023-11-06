@@ -5,15 +5,13 @@ from pygame import mixer
 import math
 import sys
 import os
+import json
 
 from mutagen.mp3 import MP3
 import time
 import threading
 
 from tkinter import messagebox
-
-from pygame_gui import UIManager, PackageResource
-
 from pygame_gui.elements import UIWindow
 from pygame_gui.elements import UIButton
 from pygame_gui.elements import UISelectionList
@@ -30,11 +28,19 @@ class InGame:
         self.user1 = user1
         self.user2 = user2
         self.screen = pygame.display.set_mode((ancho, alto))
-        pygame.display.set_caption("Seleccione Musica")
+        pygame.display.set_caption("Juego")
         self.background = pygame.image.load("assets/ingame_bg.png")
         self.gui_manager = pygame_gui.UIManager((ancho, alto), 'config/theme_ingame.json')
         self.cmusica = "Musica"
-        self.canciones = [archivo for archivo in os.listdir(self.cmusica) if archivo.endswith('.mp3')]#os.listdir(self.cmusica)
+        self.canciones = []
+        with open('config/users.json','r') as file:
+            data = json.load(file)
+            users = data['users']
+            for user in users:
+                if user['username'] == self.user1:
+                    self.canciones = user['songs']
+
+    #   self.canciones = [archivo for archivo in os.listdir(self.cmusica) if archivo.endswith('.mp3')]#os.listdir(self.cmusica)
         self.start = False
         self.TILE_TYPES = 7
         self.ROWS = 15
@@ -210,6 +216,7 @@ class InGame:
 
 
     def begin(self):
+
         if self.rol == "attacker":
             self.attacker.set_text("Atacante: "+ self.user1)
             self.defender.set_text("Defensor: "+ self.user2)
@@ -257,6 +264,26 @@ class InGame:
 
                 self.all_sprites.update()
                 self.bullet_sprites.update()
+
+                for y, row in enumerate(self.world_data):
+                    for x, tile in enumerate(row):
+                        if tile >= 0:
+                            tile_rect = pygame.Rect(x * self.TILE_SIZE, y * self.TILE_SIZE, self.TILE_SIZE,
+                                                    self.TILE_SIZE)
+
+                            if self.gun != None:
+
+
+                                if tile_rect.colliderect(self.gun.rect) and self.world_data[y][x] >= 0:
+                                    self.tank.choque = True
+
+
+                                else:
+                                    self.tank.choque = False
+
+
+
+
 
 
 
@@ -545,6 +572,7 @@ class Tank(pygame.sprite.Sprite):
         self.angle = 0
         self.speed = 0
         self.rotation_speed = 0
+        self.choque = False
 
 
     def update(self):
@@ -553,37 +581,38 @@ class Tank(pygame.sprite.Sprite):
         self.speed_x = 0
         self.speed_y = 0
 
-        if keys[pygame.K_UP]:
-            self.speed_y = -3
-            self.angle = 90
-            #move_forward_sound.play()
-        elif keys[pygame.K_DOWN]:
-            self.speed_y = 3
-            self.angle = 270
-            #move_forward_sound.play()
+        if not self.choque:
+            if keys[pygame.K_UP]:
+                self.speed_y = -3
+                self.angle = 90
+                #move_forward_sound.play()
+            elif keys[pygame.K_DOWN]:
+                self.speed_y = 3
+                self.angle = 270
+                #move_forward_sound.play()
 
 
-        if keys[pygame.K_LEFT]:
-            self.speed_x = -3
-            self.angle = 180
-            #move_forward_sound.play()
-        elif keys[pygame.K_RIGHT]:
-            self.speed_x = 3
-            self.angle = 0
-            #move_forward_sound.play()
+            if keys[pygame.K_LEFT]:
+                self.speed_x = -3
+                self.angle = 180
+                #move_forward_sound.play()
+            elif keys[pygame.K_RIGHT]:
+                self.speed_x = 3
+                self.angle = 0
+                #move_forward_sound.play()
 
-        self.rect.x += self.speed_x
-        self.rect.y += self.speed_y
+            self.rect.x += self.speed_x
+            self.rect.y += self.speed_y
 
-        self.image = pygame.transform.rotate(self.original_tank_image, self.angle)
-        self.rect = self.image.get_rect(center=self.rect.center)
+            self.image = pygame.transform.rotate(self.original_tank_image, self.angle)
+            self.rect = self.image.get_rect(center=self.rect.center)
 
-        angle_rad = math.radians(self.angle)
-        dx = math.cos(angle_rad) * self.speed
-        dy = math.sin(angle_rad) * self.speed
+            angle_rad = math.radians(self.angle)
+            dx = math.cos(angle_rad) * self.speed
+            dy = math.sin(angle_rad) * self.speed
 
-        self.rect.x += dx
-        self.rect.y -= dy
+            self.rect.x += dx
+            self.rect.y -= dy
 
 class Gun(pygame.sprite.Sprite):
     def __init__(self, tank):
