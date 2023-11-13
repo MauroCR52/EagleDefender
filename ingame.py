@@ -6,16 +6,16 @@ import math
 import sys
 import os
 import json
-
+import random
 from mutagen.mp3 import MP3
 import time
 import threading
-
+import csv
 from tkinter import messagebox
 from pygame_gui.elements import UIWindow
 from pygame_gui.elements import UIButton
 from pygame_gui.elements import UISelectionList
-
+from datetime import datetime
 
 
 
@@ -74,9 +74,6 @@ class InGame:
         self.all_sprites = pygame.sprite.Group()
         self.bullet_sprites = pygame.sprite.Group()
         self.balas_perdidas = 0
-        self.max_disparosf = 0
-        self.max_disparosw = 0
-        self.max_disparosb = 0
 
         self.water_bullets_rest = 5
         self.bomb_bullets_rest = 5
@@ -90,7 +87,10 @@ class InGame:
         self.concrete_blocks = 10
         self.eagle_block = 1
 
-
+        self.placed_blocks = 0
+        self.destroyed_blocks = 0
+        self.normal_bullets = self.water_bullets_rest
+        self.power_activation = True
 
         self.destroyed_wood_blocks = 0
         self.destroyed_steel_blocks = 0
@@ -141,6 +141,17 @@ class InGame:
         self.seleccion_actual = self.canciones[0]
 
 
+
+        self.minutes_half = None
+        self.seconds_half = None
+
+        self.song_name = ""
+        self.tempo = ""
+        self.popularity = ""
+        self.danceability = ""
+        self.acousticness = ""
+
+
     def draw_world(self):
         for y, row in enumerate(self.world_data):
             for x, tile in enumerate(row):
@@ -177,33 +188,83 @@ class InGame:
                 tiempo_transcurrido = (pygame.time.get_ticks() / 1000) - self.inicio
 
                 # Calcula los minutos y segundos
-                minutos = int(tiempo_transcurrido // 60)
-                segundos = int(tiempo_transcurrido % 60)
+                self.minutos = int(tiempo_transcurrido // 60)
+                self.segundos = int(tiempo_transcurrido % 60)
 
                 # Formatea el tiempo en minutos y segundos
-                tiempo_formateado = f"Tiempo: {minutos:02d}:{segundos:02d}"
+                self.tiempo_formateado = f"Tiempo: {self.minutos:02d}:{self.segundos:02d}"
 
-                self.texto_cronometro.set_text(tiempo_formateado)
+                self.texto_cronometro.set_text(self.tiempo_formateado)
+
+
+
+                #if self.duraA / 2 - 0.5 <= tiempo_transcurrido <= self.duraA / 2 + 0.5:
+                    #if self.destroyed_blocks >= self.placed_blocks // 2:
+                        #print("se puede usar el poder")
+                        #pygame.time.set_timer(pygame.USEREVENT + 1, 10000)
+                        #while():
+                            #if self.power_activation == True:
+                                #self.water_bullets_rest = round(self.water_bullets_rest + (int(self.popularity) / float(self.danceability) * float(self.acousticness) + float(self.tempo)))
+                            #self.power_activation = False
+                        #self.water_bullets_rest = self.normal_bullets
+                    #else:
+                        #print("no se puede usar el poder")
 
                 if tiempo_transcurrido >= self.duraA:
                     pygame.mixer.music.stop()
-                    self.texto_cronometro.set_text(f"{tiempo_formateado}")
+                    self.texto_cronometro.set_text(f"{self.tiempo_formateado}")
                     self.inicio = None
                     if self.rol == "defender":
                         messagebox.showinfo("Perdistes", "El defensor " + self.user1 + " gana")
                     else:
                         messagebox.showinfo("Perdistes", "El defensor " + self.user2 + " gana")
 
+    #def activate_power(self):
+
+
+
+    # Función para obtener una canción aleatoria de un usuario específico
+    def obtener_cancion_aleatoria(self, usuario):
+        with open('config/users.json','r') as file:
+            data = json.load(file)
+            users = data['users']
+            # Busca el usuario en la lista de usuarios
+            for usuario_actual in users:
+                if usuario_actual["username"] == usuario:
+                    # Si encuentra al usuario, elige una canción aleatoria
+                    cancion_aleatoria = random.choice(usuario_actual["songs"])
+                    self.seleccion = cancion_aleatoria
+            # Si no se encuentra el usuario, devuelve None o maneja el caso según tus necesidades
+            return None
+
+    # Función para convertir el tiempo de minutos y segundos a segundos totales
+    def convertir_tiempo_a_segundos(self,tiempo):
+        minutos, segundos = map(int, tiempo.split(':'))
+        return minutos * 60 + segundos
 
     def initGame(self):
-        self.song_window.kill()
-        self.song_window = None
-        self.button_song = None
-        self.song_selection = None
+        with open('config/songs.json', 'r') as file:
+            data = json.load(file)
+        # Buscar la canción en la lista de canciones
+        for cancion in data["songs"]:
+            if cancion["song"] == self.seleccion:
+                # Acceder a los datos específicos
+                self.song_name = cancion["song"]
+                self.tempo = cancion["tempo"]
+                self.popularity = cancion["popularity"]
+                self.danceability = cancion["danceability"]
+                self.acousticness = cancion["acoustic"]
+                break
+        else:
+            # Este bloque se ejecutará si el bucle no se rompe, es decir, si no se encuentra la canción
+            print(f"No se encontró la canción")
 
+
+        self.button_start_label.disable()
         self.audioplay = os.path.join(self.cmusica, self.seleccion)
         pygame.mixer.music.load(self.audioplay)
         pygame.mixer.music.play()
+        pygame.mixer.music.set_volume(0.05)
         self.audioD = MP3(self.audioplay)
         self.duraA = self.audioD.info.length
         self.inicio = pygame.time.get_ticks() / 1000
@@ -259,7 +320,11 @@ class InGame:
                     if (event.type == pygame_gui.UI_BUTTON_PRESSED
                             and event.ui_element == self.button_start):
                             if self.eagle_block == 0:
-                                self.open_song_list()
+                                self.obtener_cancion_aleatoria(self.user1)
+                                self.current_tile = -1
+                                self.initGame()
+
+                                #self.open_song_list()
                             else:
                                 messagebox.showinfo("Error", "Debes colocar el águila")
                     # Pasar eventos de pygame a pygame_gui
@@ -284,12 +349,6 @@ class InGame:
                                 else:
                                     self.tank.choque = False
 
-
-
-
-
-
-
                 for bullet in self.bullet_sprites:
                     if bullet.rect.x < 0 or bullet.rect.x > 1150:
                         bullet.kill()
@@ -308,10 +367,86 @@ class InGame:
 
                                 if bullet.rect.colliderect(tile_rect):
 
-                                    if self.world_data[y][x] == 0:
+                                    if self.world_data[y][x] == 3:
+                                        self.world_data[y][x] = -1
+                                        if self.rol == "attacker":
+                                            with open("config/leaderboard.csv", 'a', newline='') as archivo:
+                                                with open('config/users.json', 'r') as file:
+                                                    data = json.load(file)
+                                                    users = data['users']
+                                                    for user in users:
+                                                        if user['username'] == self.user1:
+                                                            image_path = user['profile_pic']
+
+                                                # Crea un objeto escritor de CSV
+                                                escritor_csv = csv.writer(archivo)
+
+                                                # Escribe una nueva fila con el nombre y el número
+                                                escritor_csv.writerow([self.user1, f"{self.minutos:02d}:{self.segundos:02d}", image_path])
+
+                                            with open("config/leaderboard.csv", 'r', newline='') as file:
+                                                # Lee los datos del archivo CSV
+                                                reader = csv.reader(file)
+                                                header = next(
+                                                    reader)  # Lee la primera fila (encabezado) y la guarda en 'header'
+                                                filas = list(
+                                                    reader)  # Lee el resto de las filas y las guarda en 'filas'
+
+                                            # Ordena las filas por tiempo, utilizando la función convertir_tiempo_a_segundos
+                                            filas_ordenadas = sorted(filas,
+                                                                     key=lambda x: self.convertir_tiempo_a_segundos(x[1]))
+
+                                            # Escribe las filas ordenadas de nuevo en el archivo CSV
+                                            with open("config/leaderboard.csv", 'w', newline='') as file:
+                                                writer = csv.writer(file)
+                                                writer.writerow(header)  # Escribe el encabezado
+                                                writer.writerows(filas_ordenadas)  # Escribe las filas ordenadas
+
+
+                                            messagebox.showinfo("Ganaste", "El atacante " + self.user1 + " gana")
+
+                                        else:
+                                            with open("config/leaderboard.csv", 'a', newline='') as archivo:
+                                                with open('config/users.json', 'r') as file:
+                                                    data = json.load(file)
+                                                    users = data['users']
+                                                    for user in users:
+                                                        if user['username'] == self.user2:
+                                                            image_path = user['profile_pic']
+
+                                                # Crea un objeto escritor de CSV
+                                                escritor_csv = csv.writer(archivo)
+
+                                                # Escribe una nueva fila con el nombre y el número
+                                                escritor_csv.writerow([self.user2, f"{self.minutos:02d}:{self.segundos:02d}", image_path])
+
+                                            with open("config/leaderboard.csv", 'r', newline='') as file:
+                                                # Lee los datos del archivo CSV
+                                                reader = csv.reader(file)
+                                                header = next(
+                                                    reader)  # Lee la primera fila (encabezado) y la guarda en 'header'
+                                                filas = list(
+                                                    reader)  # Lee el resto de las filas y las guarda en 'filas'
+
+                                                # Ordena las filas por tiempo, utilizando la función convertir_tiempo_a_segundos
+                                            filas_ordenadas = sorted(filas,
+                                                                     key=lambda x: self.convertir_tiempo_a_segundos(
+                                                                         x[1]))
+
+                                            # Escribe las filas ordenadas de nuevo en el archivo CSV
+                                            with open("config/leaderboard.csv", 'w', newline='') as file:
+                                                writer = csv.writer(file)
+                                                writer.writerow(header)  # Escribe el encabezado
+                                                writer.writerows(filas_ordenadas)  # Escribe las filas ordenadas
+
+                                            messagebox.showinfo("Ganaste", "El atacante " + self.user2 + " gana")
+
+
+                                    elif self.world_data[y][x] == 0:
                                         self.world_data[y][x] = -1
                                         self.destroyed_wood_blocks += 1
                                         self.score += 5
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "water" and self.world_data[y][x] == 1:
                                         self.world_data[y][x] = 5
@@ -320,6 +455,7 @@ class InGame:
                                         self.world_data[y][x] = -1
                                         self.destroyed_steel_blocks += 1
                                         self.score += 10
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "water" and self.world_data[y][x] == 2:
                                         self.world_data[y][x] = 4
@@ -331,16 +467,19 @@ class InGame:
                                         self.world_data[y][x] = -1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 15
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 1:
                                         self.world_data[y][x] = -1
                                         self.destroyed_steel_blocks += 1
                                         self.score += 10
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 5:
                                         self.world_data[y][x] = -1
                                         self.destroyed_steel_blocks += 1
                                         self.score += 15
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 2:
                                         self.world_data[y][x] = 6
@@ -349,44 +488,59 @@ class InGame:
                                         self.world_data[y][x] = -1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 10
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 6:
                                         self.world_data[y][x] = -1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 15
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 1:
                                         self.world_data[y][x] = -1
                                         self.destroyed_steel_blocks += 1
                                         self.score += 10
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 2:
                                         self.world_data[y][x] = -1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 15
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 4:
                                         self.world_data[y][x] = -1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 10
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 5:
                                         self.world_data[y][x] = -1
                                         self.destroyed_steel_blocks += 1
                                         self.score += 15
+                                        self.destroyed_blocks += 1
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 6:
                                         self.world_data[y][x] = -1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 15
-
+                                        self.destroyed_blocks += 1
                                     bullet.kill()
-
+                                    print(self.destroyed_blocks)
 
 
                 self.texto = f"Balas\nperdidas: {self.balas_perdidas}"
 
                 self.counter_eagle = f"= {self.eagle_block}"
+
+                self.counter_song = f"Cancion: {self.song_name}"
+                self.counter_popularity = f"Popularidad: {self.popularity}"
+                self.counter_tempo = f"Tempo: {self.tempo}"
+                self.counter_danceability = f"Bailabilidad: {self.danceability}"
+                self.counter_accousticness = f"Acústico: {self.acousticness}"
+
+
+
 
                 if self.start != True:
                     self.counter_0 = f"= {self.wood_blocks}"
@@ -412,6 +566,15 @@ class InGame:
                 self.eagle_counter_render = self.fuente.render(self.counter_eagle, True, self.white)
 
 
+
+                self.song_render = self.fuente.render(self.counter_song, True, self.black)
+                self.tempo_render = self.fuente.render(self.counter_tempo, True, self.black)
+                self.popularity_render = self.fuente.render(self.counter_popularity, True, self.black)
+                self.acousticness_render = self.fuente.render(self.counter_accousticness, True, self.black)
+                self.danceability_render = self.fuente.render(self.counter_danceability, True, self.black)
+
+
+
                 self.total_score = self.fuente.render(self.text_score, True, self.white)
 
                 self.c_water = self.fuente.render(self.water_counter, True, self.white)
@@ -424,7 +587,7 @@ class InGame:
                 if self.gun != None:
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
-                        if keys[pygame.K_SPACE] and self.max_disparosf < 5:
+                        if keys[pygame.K_SPACE] and self.fire_bullets_rest != 0:
                             Bullet_type = "fire"
                             self.fire_bullets_rest-=1
 
@@ -439,13 +602,12 @@ class InGame:
                             self.gun.can_shoot = False
                             self.gun.shoot_cooldown = self.gun.cooldown_duration
                             self.balas_perdidas += 1
-                            self.max_disparosf += 1
 
                     self.bullet_sprites.update()
 
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
-                        if keys[pygame.K_c] and self.max_disparosw < 5:
+                        if keys[pygame.K_c] and self.water_bullets_rest != 0:
                             Bullet_type = "water"
                             self.water_bullets_rest-=1
 
@@ -460,12 +622,11 @@ class InGame:
                             self.gun.can_shoot = False
                             self.gun.shoot_cooldown = self.gun.cooldown_duration
                             self.balas_perdidas += 1
-                            self.max_disparosw += 1
                     self.bullet_sprites.update()
 
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
-                        if keys[pygame.K_v] and self.max_disparosb < 5:
+                        if keys[pygame.K_v] and self.bomb_bullets_rest != 0:
                             Bullet_type = "bomb"
                             self.bomb_bullets_rest-=1
                             bullet_angle = self.gun.angle
@@ -479,8 +640,6 @@ class InGame:
                             self.gun.can_shoot = False
                             self.gun.shoot_cooldown = self.gun.cooldown_duration
                             self.balas_perdidas += 1
-                            self.max_disparosb += 1
-                            print(self.balas_perdidas)
                     self.bullet_sprites.update()
 
                 self.screen.blit(self.background, (0, 0))
@@ -491,6 +650,14 @@ class InGame:
                 self.screen.blit(self.c_1_render, (1280, 140))
                 self.screen.blit(self.c_2_render, (1280, 215))
                 self.screen.blit(self.eagle_counter_render, (1280, 290))
+
+                self.screen.blit(self.song_render, (10, 660))
+                self.screen.blit(self.tempo_render, (10, 680))
+                self.screen.blit(self.popularity_render, (10, 700))
+                self.screen.blit(self.acousticness_render, (10, 720))
+                self.screen.blit(self.danceability_render, (10, 740))
+
+
 
                 self.screen.blit(self.total_score, (1218, 390))
                 self.screen.blit(self.fire_img, self.fire_rect)
@@ -522,36 +689,42 @@ class InGame:
                 if pos[0] < 1173 and pos[1] < 766:
                     if pygame.mouse.get_pressed()[0] == 1:
                         if self.world_data[y][x] != self.current_tile:
-                            # si el bloque aun no ha llegado a 0
-                            if (self.world_data[y][x] != -5):
-
-                                if (self.current_tile == 3 and self.eagle_block != 0):
-                                    if self.world_data[y][x] == -1:
-                                        self.world_data[y][x] = self.current_tile
-                                        self.eagle_block -= 1
-                                elif (self.current_tile == 0 and self.wood_blocks != 0):
-                                    if self.world_data[y][x] == -1:
-                                        self.world_data[y][x] = self.current_tile
-                                        self.wood_blocks -= 1
-                                elif (self.current_tile == 1 and self.steel_blocks != 0):
-                                    if self.world_data[y][x] == -1:
-                                        self.world_data[y][x] = self.current_tile
-                                        self.steel_blocks -= 1
-                                elif (self.current_tile == 2 and self.concrete_blocks != 0):
-                                    if self.world_data[y][x] == -1:
-                                        self.world_data[y][x] = self.current_tile
-                                        self.concrete_blocks -= 1
+                            if (self.current_tile == 3 and self.eagle_block != 0):
+                                if self.world_data[y][x] == -1:
+                                    self.world_data[y][x] = self.current_tile
+                                    self.eagle_block -= 1
+                                    self.placed_blocks += 1
+                            elif (self.current_tile == 0 and self.wood_blocks != 0):
+                                if self.world_data[y][x] == -1:
+                                    self.world_data[y][x] = self.current_tile
+                                    self.wood_blocks -= 1
+                                    self.placed_blocks += 1
+                            elif (self.current_tile == 1 and self.steel_blocks != 0):
+                                if self.world_data[y][x] == -1:
+                                    self.world_data[y][x] = self.current_tile
+                                    self.steel_blocks -= 1
+                                    self.placed_blocks += 1
+                            elif (self.current_tile == 2 and self.concrete_blocks != 0):
+                                if self.world_data[y][x] == -1:
+                                    self.world_data[y][x] = self.current_tile
+                                    self.concrete_blocks -= 1
+                                    self.placed_blocks += 1
                     if self.start != True :
                         if pygame.mouse.get_pressed()[2] == 1:
                             if self.world_data[y][x] == 0:
                                 self.wood_blocks += 1
+                                self.placed_blocks -= 1
                             if self.world_data[y][x] == 1:
                                 self.steel_blocks += 1
+                                self.placed_blocks -= 1
                             if self.world_data[y][x] == 2:
                                 self.concrete_blocks += 1
+                                self.placed_blocks -= 1
                             if self.world_data[y][x] == 3:
                                 self.eagle_block += 1
+                                self.placed_blocks -= 1
                             self.world_data[y][x] = -1
+                            print(self.placed_blocks)
 
                 self.all_sprites.draw(self.screen)
                 pygame.display.update()
@@ -756,6 +929,7 @@ class BB(pygame.sprite.Sprite):
         dy = -self.speed * math.sin(angle_rad)
         self.rect.x += dx
         self.rect.y += dy
+
 
 class Song(UIWindow):
     def __init__(self, rect, ui_manager, song_list):
