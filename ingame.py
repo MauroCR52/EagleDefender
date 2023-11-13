@@ -55,7 +55,7 @@ class InGame:
         self.button_list = []
         self.button_col = 0
         self.button_row = 0
-        for i in range(len(self.img_list) - 4):
+        for i in range(len(self.img_list) - 3):
             tile_button = button.Button(1168 + (75 * self.button_col) + 50, 75 * self.button_row + 50, self.img_list[i], 1)
             self.button_list.append(tile_button)
             self.button_row += 1
@@ -88,6 +88,9 @@ class InGame:
         self.wood_blocks = 10
         self.steel_blocks = 10
         self.concrete_blocks = 10
+        self.eagle_block = 1
+
+
 
         self.destroyed_wood_blocks = 0
         self.destroyed_steel_blocks = 0
@@ -99,11 +102,6 @@ class InGame:
 
         self.button_start = pygame.Rect(1220, 670, 130, 70)
         self.button_start_label = pygame_gui.elements.UIButton(relative_rect=self.button_start, text="Empezar", manager=self.gui_manager)
-
-        self.eagle_img = pygame.image.load("assets/eagle.png")
-        self.eagle_img = pygame.transform.scale(self.eagle_img,(self.TILE_SIZE - 1 , self.TILE_SIZE - 1))
-        self.eagle_rect = self.eagle_img.get_rect()
-        self.eagle_rect.center = (1150, 332)
 
         self.fire_img = pygame.image.load("assets/bullet.png")
         self.fire_img = pygame.transform.scale(self.fire_img,(self.TILE_SIZE - 1 , self.TILE_SIZE - 1))
@@ -142,6 +140,7 @@ class InGame:
         self.crono = pygame.time.Clock()
         self.inicio = None
         self.seleccion_actual = self.canciones[0]
+
 
     def draw_world(self):
         for y, row in enumerate(self.world_data):
@@ -224,7 +223,6 @@ class InGame:
             self.attacker.set_text("Atacante: "+ self.user2)
             self.defender.set_text("Defensor: "+ self.user1)
 
-        self.world_data[6][22] = -5
         cronometro_thread = threading.Thread(target=self.actualizar_cronometro, args=(self.seleccion_actual,))
         cronometro_thread.daemon = True
         cronometro_thread.start()
@@ -233,7 +231,10 @@ class InGame:
 
         global Bullet_type
         while True:
+
                 time_delta = clock.tick(60) / 1000.0  # Limita la velocidad de fotogramas a 60 FPS
+
+
 
                 # salir del juego con la ventana
                 for event in pygame.event.get():
@@ -258,7 +259,10 @@ class InGame:
 
                     if (event.type == pygame_gui.UI_BUTTON_PRESSED
                             and event.ui_element == self.button_start):
-                            self.open_song_list()
+                            if self.eagle_block == 0:
+                                self.open_song_list()
+                            else:
+                                messagebox.showinfo("Error", "Debes colocar el águila")
                     # Pasar eventos de pygame a pygame_gui
                     self.gui_manager.process_events(event)  # Actualiza el administrador de interfaz de usuario de pygame_gui
 
@@ -296,12 +300,6 @@ class InGame:
                     if distance > 8 * 51.2:
                         bullet.kill()
 
-                    if self.eagle_rect.colliderect(bullet.rect):
-                        if self.rol == "attacker":
-                            messagebox.showinfo("Felicidades", "El atacante "+self.user1 + " gana")
-                        else:
-                            messagebox.showinfo("Felicidades", "El atacante "+self.user2 + " gana")
-                        bullet.kill()
 
                     for y, row in enumerate(self.world_data):
                         for x, tile in enumerate(row):
@@ -401,6 +399,8 @@ class InGame:
 
                 self.texto = f"Balas\nperdidas: {self.balas_perdidas}"
 
+                self.counter_eagle = f"= {self.eagle_block}"
+
                 if self.start != True:
                     self.counter_0 = f"= {self.wood_blocks}"
                     self.counter_1 = f"= {self.steel_blocks}"
@@ -423,7 +423,9 @@ class InGame:
                 self.c_0_render = self.fuente.render(self.counter_0, True, self.white)
                 self.c_1_render = self.fuente.render(self.counter_1, True, self.white)
                 self.c_2_render = self.fuente.render(self.counter_2, True, self.white)
-                self.c_destroyed = self.fuente.render(self.counter_destroyed, True, self.white)
+                self.eagle_counter_render = self.fuente.render(self.counter_eagle, True, self.white)
+
+
                 self.total_score = self.fuente.render(self.text_score, True, self.white)
 
                 self.c_water = self.fuente.render(self.water_counter, True, self.white)
@@ -504,7 +506,6 @@ class InGame:
                 self.screen.blit(self.c_2_render, (1280, 215))
                 self.screen.blit(self.c_destroyed, (1218, 330))
                 self.screen.blit(self.total_score, (1218, 390))
-                self.screen.blit(self.eagle_img, self.eagle_rect)
                 self.screen.blit(self.fire_img, self.fire_rect)
                 self.screen.blit(self.water_img, self.water_rect)
                 self.screen.blit(self.bomb_img, self.bomb_rect)
@@ -536,7 +537,12 @@ class InGame:
                         if self.world_data[y][x] != self.current_tile:
                             # si el bloque aun no ha llegado a 0
                             if (self.world_data[y][x] != -5):
-                                if (self.current_tile == 0 and self.wood_blocks != 0):
+
+                                if (self.current_tile == 3 and self.eagle_block != 0):
+                                    if self.world_data[y][x] == -1:
+                                        self.world_data[y][x] = self.current_tile
+                                        self.eagle_block -= 1
+                                elif (self.current_tile == 0 and self.wood_blocks != 0):
                                     if self.world_data[y][x] == -1:
                                         self.world_data[y][x] = self.current_tile
                                         self.wood_blocks -= 1
@@ -556,6 +562,8 @@ class InGame:
                                 self.steel_blocks += 1
                             if self.world_data[y][x] == 2:
                                 self.concrete_blocks += 1
+                            if self.world_data[y][x] == 3:
+                                self.eagle_block += 1
                             self.world_data[y][x] = -1
 
                 self.all_sprites.draw(self.screen)
