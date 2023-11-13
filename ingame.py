@@ -96,7 +96,6 @@ class InGame:
         self.destroyed_steel_blocks = 0
         self.destroyed_concrete_blocks = 0
 
-        self.destroyed_blocks = 0
         self.score = 0
 
 
@@ -311,7 +310,6 @@ class InGame:
 
                                     if self.world_data[y][x] == 0:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
                                         self.destroyed_wood_blocks += 1
                                         self.score += 5
 
@@ -320,7 +318,6 @@ class InGame:
 
                                     elif Bullet_type == "water" and self.world_data[y][x] == 5:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
                                         self.destroyed_steel_blocks += 1
                                         self.score += 10
 
@@ -332,20 +329,17 @@ class InGame:
 
                                     elif Bullet_type == "water" and self.world_data[y][x] == 6:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 15
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 1:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
                                         self.destroyed_steel_blocks += 1
                                         self.score += 10
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 5:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
-                                        self.destroyed_concrete_blocks += 1
+                                        self.destroyed_steel_blocks += 1
                                         self.score += 15
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 2:
@@ -353,43 +347,36 @@ class InGame:
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 4:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
-                                        self.destroyed_steel_blocks += 1
+                                        self.destroyed_concrete_blocks += 1
                                         self.score += 10
 
                                     elif Bullet_type == "fire" and self.world_data[y][x] == 6:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 15
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 1:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
                                         self.destroyed_steel_blocks += 1
                                         self.score += 10
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 2:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 15
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 4:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
-                                        self.destroyed_steel_blocks += 1
+                                        self.destroyed_concrete_blocks += 1
                                         self.score += 10
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 5:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
-                                        self.destroyed_concrete_blocks += 1
+                                        self.destroyed_steel_blocks += 1
                                         self.score += 15
 
                                     elif Bullet_type == "bomb" and self.world_data[y][x] == 6:
                                         self.world_data[y][x] = -1
-                                        self.destroyed_blocks += 1
                                         self.destroyed_concrete_blocks += 1
                                         self.score += 15
 
@@ -411,7 +398,6 @@ class InGame:
                     self.counter_2 = f"= {self.destroyed_concrete_blocks}"
 
 
-                self.counter_destroyed = f"Bloques\ndestruidos: {self.destroyed_blocks}"
                 self.text_score = f"Puntaje: {self.score}"
 
                 self.water_counter = f"= {self.water_bullets_rest}"
@@ -500,11 +486,12 @@ class InGame:
                 self.screen.blit(self.background, (0, 0))
                 self.draw_grid()
                 self.draw_world()
-                self.screen.blit(self.texto_renderizado, (1218, 280))
+                self.screen.blit(self.texto_renderizado, (1218, 330))
                 self.screen.blit(self.c_0_render, (1280, 65))
                 self.screen.blit(self.c_1_render, (1280, 140))
                 self.screen.blit(self.c_2_render, (1280, 215))
-                self.screen.blit(self.c_destroyed, (1218, 330))
+                self.screen.blit(self.eagle_counter_render, (1280, 290))
+
                 self.screen.blit(self.total_score, (1218, 390))
                 self.screen.blit(self.fire_img, self.fire_rect)
                 self.screen.blit(self.water_img, self.water_rect)
