@@ -17,12 +17,11 @@ from pygame_gui.elements import UIButton
 from pygame_gui.elements import UISelectionList
 from datetime import datetime
 Bullet_type = ""
-pause = False
 
 
-
-class InGame:
-    def __init__(self, ancho, alto, rol, user1, user2):
+class LoadedGame:
+    def __init__(self, ancho, alto, rol, user1, user2, archivo):
+        self.archivo = archivo
         pygame.init()
         mixer.init()
         self.rol = rol
@@ -151,8 +150,6 @@ class InGame:
 
         self.cronometro = True
 
-        self.pause_start = None
-        self.tiempo_transcurrido_total = 0
     def draw_world(self):
         for y, row in enumerate(self.world_data):
             for x, tile in enumerate(row):
@@ -164,11 +161,6 @@ class InGame:
             pygame.draw.line(self.screen, self.white, (c * self.TILE_SIZE, 0), (c * self.TILE_SIZE, 766))
         for c in range(self.ROWS + 1):
             pygame.draw.line(self.screen, self.white, (0, c * self.TILE_SIZE), (1173, c * self.TILE_SIZE))
-
-    def draw_pause(self):
-        background = pygame.image.load("assets/help_bg.png")
-        self.screen.blit(background, (0, 0))
-
 
     def open_song_list(self):
         self.current_tile = -1
@@ -188,43 +180,43 @@ class InGame:
 
         self.button_start_label.disable()
 
-    # def actualizar_cronometro(self, seleccion):
-    #     while self.cronometro:
-    #         pygame.time.wait(100)
-    #         if self.inicio is not None and seleccion == self.seleccion_actual:
-    #             tiempo_transcurrido = (pygame.time.get_ticks() / 1000) - self.inicio
-    #
-    #             # Calcula los minutos y segundos
-    #             self.minutos = int(tiempo_transcurrido // 60)
-    #             self.segundos = int(tiempo_transcurrido % 60)
-    #
-    #             # Formatea el tiempo en minutos y segundos
-    #             self.tiempo_formateado = f"Tiempo: {self.minutos:02d}:{self.segundos:02d}"
-    #
-    #             self.texto_cronometro.set_text(self.tiempo_formateado)
-    #
-    #             # if self.duraA / 2 - 0.5 <= tiempo_transcurrido <= self.duraA / 2 + 0.5:
-    #             # if self.destroyed_blocks >= self.placed_blocks // 2:
-    #             # print("se puede usar el poder")
-    #             # pygame.time.set_timer(pygame.USEREVENT + 1, 10000)
-    #             # while():
-    #             # if self.power_activation == True:
-    #             # self.water_bullets_rest = round(self.water_bullets_rest + (int(self.popularity) / float(self.danceability) * float(self.acousticness) + float(self.tempo)))
-    #             # self.power_activation = False
-    #             # self.water_bullets_rest = self.normal_bullets
-    #             # else:
-    #             # print("no se puede usar el poder")
-    #
-    #             if tiempo_transcurrido >= self.duraA:
-    #                 pygame.mixer.music.stop()
-    #                 self.texto_cronometro.set_text(f"{self.tiempo_formateado}")
-    #                 self.inicio = None
-    #                 if self.rol == "defender":
-    #                     messagebox.showinfo("Perdistes", "El defensor " + self.user1 + " gana")
-    #                 else:
-    #                     messagebox.showinfo("Perdistes", "El defensor " + self.user2 + " gana")
-    #
-    # # def activate_power(self):
+    def actualizar_cronometro(self, seleccion):
+        while self.cronometro:
+            pygame.time.wait(100)
+            if self.inicio is not None and seleccion == self.seleccion_actual:
+                tiempo_transcurrido = (pygame.time.get_ticks() / 1000) - self.inicio
+
+                # Calcula los minutos y segundos
+                self.minutos = int(tiempo_transcurrido // 60)
+                self.segundos = int(tiempo_transcurrido % 60)
+
+                # Formatea el tiempo en minutos y segundos
+                self.tiempo_formateado = f"Tiempo: {self.minutos:02d}:{self.segundos:02d}"
+
+                self.texto_cronometro.set_text(self.tiempo_formateado)
+
+                # if self.duraA / 2 - 0.5 <= tiempo_transcurrido <= self.duraA / 2 + 0.5:
+                # if self.destroyed_blocks >= self.placed_blocks // 2:
+                # print("se puede usar el poder")
+                # pygame.time.set_timer(pygame.USEREVENT + 1, 10000)
+                # while():
+                # if self.power_activation == True:
+                # self.water_bullets_rest = round(self.water_bullets_rest + (int(self.popularity) / float(self.danceability) * float(self.acousticness) + float(self.tempo)))
+                # self.power_activation = False
+                # self.water_bullets_rest = self.normal_bullets
+                # else:
+                # print("no se puede usar el poder")
+
+                if tiempo_transcurrido >= self.duraA:
+                    pygame.mixer.music.stop()
+                    self.texto_cronometro.set_text(f"{self.tiempo_formateado}")
+                    self.inicio = None
+                    if self.rol == "defender":
+                        messagebox.showinfo("Perdistes", "El defensor " + self.user1 + " gana")
+                    else:
+                        messagebox.showinfo("Perdistes", "El defensor " + self.user2 + " gana")
+
+    # def activate_power(self):
 
     # Función para obtener una canción aleatoria de un usuario específico
     def obtener_cancion_aleatoria(self, usuario):
@@ -310,7 +302,6 @@ class InGame:
         self.start = True
 
     def begin(self):
-        global pause
 
         if self.rol == "attacker":
             self.attacker.set_text("Atacante: " + self.user1)
@@ -319,75 +310,21 @@ class InGame:
             self.attacker.set_text("Atacante: " + self.user2)
             self.defender.set_text("Defensor: " + self.user1)
 
-        # cronometro_thread = threading.Thread(target=self.actualizar_cronometro, args=(self.seleccion_actual,))
-        # cronometro_thread.daemon = True
-        # cronometro_thread.start()
-
+        cronometro_thread = threading.Thread(target=self.actualizar_cronometro, args=(self.seleccion_actual,))
+        cronometro_thread.daemon = True
+        cronometro_thread.start()
         clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
 
         global Bullet_type
         while True:
+
             time_delta = clock.tick(60) / 1000.0  # Limita la velocidad de fotogramas a 60 FPS
-
-            if self.inicio is not None:
-                if not pause:
-
-                    tiempo_transcurrido = (pygame.time.get_ticks() / 1000) - self.inicio
-                    self.tiempo_transcurrido_total += tiempo_transcurrido  # Actualiza el contador total
-                    # Calcula los minutos y segundos
-                    self.minutos = int(tiempo_transcurrido // 60)
-                    self.segundos = int(tiempo_transcurrido % 60)
-
-                    # Formatea el tiempo en minutos y segundos
-                    self.tiempo_formateado = f"Tiempo: {self.minutos:02d}:{self.segundos:02d}"
-
-                    self.texto_cronometro.set_text(self.tiempo_formateado)
-
-                    # if self.duraA / 2 - 0.5 <= tiempo_transcurrido <= self.duraA / 2 + 0.5:
-                    # if self.destroyed_blocks >= self.placed_blocks // 2:
-                    # print("se puede usar el poder")
-                    # pygame.time.set_timer(pygame.USEREVENT + 1, 10000)
-                    # while():
-                    # if self.power_activation == True:
-                    # self.water_bullets_rest = round(self.water_bullets_rest + (int(self.popularity) / float(self.danceability) * float(self.acousticness) + float(self.tempo)))
-                    # self.power_activation = False
-                    # self.water_bullets_rest = self.normal_bullets
-                    # else:
-                    # print("no se puede usar el poder")
-
-                    if tiempo_transcurrido >= self.duraA:
-                        pygame.mixer.music.stop()
-                        self.texto_cronometro.set_text(f"{self.tiempo_formateado}")
-                        self.inicio = None
-                        if self.rol == "defender":
-                            messagebox.showinfo("Perdistes", "El defensor " + self.user1 + " gana")
-                        else:
-                            messagebox.showinfo("Perdistes", "El defensor " + self.user2 + " gana")
-                else:
-                    # Si el juego está en pausa, actualiza el tiempo de pausa
-                    self.tiempo_pausa = (pygame.time.get_ticks() / 1000) - self.inicio
 
             # salir del juego con la ventana
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-
-                if (event.type == pygame.KEYDOWN):
-                    if event.key == pygame.K_ESCAPE:
-                        if pause:
-                            self.inicio = pygame.time.get_ticks() / 1000
-                            pause = False
-                            pygame.mixer.music.unpause()
-
-
-                        else:
-                            self.inicio = None
-
-                            pause = True
-                            pygame.mixer.music.pause()
-
-
 
                 if (event.type == pygame_gui.UI_WINDOW_CLOSE
                         and event.ui_element == self.song_window):
@@ -397,7 +334,7 @@ class InGame:
                     self.song_selection = None
 
                 if (event.type == pygame_gui.UI_BUTTON_PRESSED
-                        and event.ui_element == self.button_song and not pause):
+                        and event.ui_element == self.button_song):
                     self.seleccion = self.song_selection.get_single_selection()
                     if self.seleccion == None:
                         messagebox.showinfo("Error", "Debes elegir una cancion")
@@ -405,7 +342,7 @@ class InGame:
                         self.initGame()
 
                 if (event.type == pygame_gui.UI_BUTTON_PRESSED
-                        and event.ui_element == self.button_start and not pause):
+                        and event.ui_element == self.button_start):
                     if self.eagle_block == 0:
                         self.obtener_cancion_aleatoria(self.user1)
                         self.current_tile = -1
@@ -684,63 +621,62 @@ class InGame:
             self.gui_manager.update(time_delta)
 
             if self.gun != None:
-                if not pause:
-                    if self.gun.can_shoot:
-                        keys = pygame.key.get_pressed()
-                        if keys[pygame.K_SPACE] and self.fire_bullets_rest != 0:
-                            Bullet_type = "fire"
-                            self.fire_bullets_rest -= 1
+                if self.gun.can_shoot:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_SPACE] and self.fire_bullets_rest != 0:
+                        Bullet_type = "fire"
+                        self.fire_bullets_rest -= 1
 
-                            bullet_angle = self.gun.angle
-                            bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
-                                math.radians(bullet_angle))
-                            bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
-                                math.radians(bullet_angle))
-                            bullet = Bullet(bullet_x, bullet_y, bullet_angle)
-                            self.all_sprites.add(bullet)
-                            self.bullet_sprites.add(bullet)
-                            self.gun.can_shoot = False
-                            self.gun.shoot_cooldown = self.gun.cooldown_duration
-                            self.balas_perdidas += 1
+                        bullet_angle = self.gun.angle
+                        bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
+                            math.radians(bullet_angle))
+                        bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
+                            math.radians(bullet_angle))
+                        bullet = Bullet(bullet_x, bullet_y, bullet_angle)
+                        self.all_sprites.add(bullet)
+                        self.bullet_sprites.add(bullet)
+                        self.gun.can_shoot = False
+                        self.gun.shoot_cooldown = self.gun.cooldown_duration
+                        self.balas_perdidas += 1
 
-                    self.bullet_sprites.update()
+                self.bullet_sprites.update()
 
-                    if self.gun.can_shoot:
-                        keys = pygame.key.get_pressed()
-                        if keys[pygame.K_c] and self.water_bullets_rest != 0:
-                            Bullet_type = "water"
-                            self.water_bullets_rest -= 1
+                if self.gun.can_shoot:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_c] and self.water_bullets_rest != 0:
+                        Bullet_type = "water"
+                        self.water_bullets_rest -= 1
 
-                            bullet_angle = self.gun.angle
-                            bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
-                                math.radians(bullet_angle))
-                            bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
-                                math.radians(bullet_angle))
-                            self.waterbullet = WB(bullet_x, bullet_y, bullet_angle)
-                            self.all_sprites.add(self.waterbullet)
-                            self.bullet_sprites.add(self.waterbullet)
-                            self.gun.can_shoot = False
-                            self.gun.shoot_cooldown = self.gun.cooldown_duration
-                            self.balas_perdidas += 1
-                    self.bullet_sprites.update()
+                        bullet_angle = self.gun.angle
+                        bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
+                            math.radians(bullet_angle))
+                        bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
+                            math.radians(bullet_angle))
+                        self.waterbullet = WB(bullet_x, bullet_y, bullet_angle)
+                        self.all_sprites.add(self.waterbullet)
+                        self.bullet_sprites.add(self.waterbullet)
+                        self.gun.can_shoot = False
+                        self.gun.shoot_cooldown = self.gun.cooldown_duration
+                        self.balas_perdidas += 1
+                self.bullet_sprites.update()
 
-                    if self.gun.can_shoot:
-                        keys = pygame.key.get_pressed()
-                        if keys[pygame.K_v] and self.bomb_bullets_rest != 0:
-                            Bullet_type = "bomb"
-                            self.bomb_bullets_rest -= 1
-                            bullet_angle = self.gun.angle
-                            bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
-                                math.radians(bullet_angle))
-                            bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
-                                math.radians(bullet_angle))
-                            bombbullet = BB(bullet_x, bullet_y, bullet_angle)
-                            self.all_sprites.add(bombbullet)
-                            self.bullet_sprites.add(bombbullet)
-                            self.gun.can_shoot = False
-                            self.gun.shoot_cooldown = self.gun.cooldown_duration
-                            self.balas_perdidas += 1
-                    self.bullet_sprites.update()
+                if self.gun.can_shoot:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_v] and self.bomb_bullets_rest != 0:
+                        Bullet_type = "bomb"
+                        self.bomb_bullets_rest -= 1
+                        bullet_angle = self.gun.angle
+                        bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
+                            math.radians(bullet_angle))
+                        bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
+                            math.radians(bullet_angle))
+                        bombbullet = BB(bullet_x, bullet_y, bullet_angle)
+                        self.all_sprites.add(bombbullet)
+                        self.bullet_sprites.add(bombbullet)
+                        self.gun.can_shoot = False
+                        self.gun.shoot_cooldown = self.gun.cooldown_duration
+                        self.balas_perdidas += 1
+                self.bullet_sprites.update()
 
             self.screen.blit(self.background, (0, 0))
             self.draw_grid()
@@ -783,52 +719,46 @@ class InGame:
 
             # revisar que el mouse se encuentre dentro de la matriz
             if pos[0] < 1173 and pos[1] < 766:
-                if not pause:
-                    if pygame.mouse.get_pressed()[0] == 1:
-                        if self.world_data[y][x] != self.current_tile:
-                            if (self.current_tile == 3 and self.eagle_block != 0):
-                                if self.world_data[y][x] == -1:
-                                    self.world_data[y][x] = self.current_tile
-                                    self.eagle_block -= 1
-                                    self.placed_blocks += 1
-                            elif (self.current_tile == 0 and self.wood_blocks != 0):
-                                if self.world_data[y][x] == -1:
-                                    self.world_data[y][x] = self.current_tile
-                                    self.wood_blocks -= 1
-                                    self.placed_blocks += 1
-                            elif (self.current_tile == 1 and self.steel_blocks != 0):
-                                if self.world_data[y][x] == -1:
-                                    self.world_data[y][x] = self.current_tile
-                                    self.steel_blocks -= 1
-                                    self.placed_blocks += 1
-                            elif (self.current_tile == 2 and self.concrete_blocks != 0):
-                                if self.world_data[y][x] == -1:
-                                    self.world_data[y][x] = self.current_tile
-                                    self.concrete_blocks -= 1
-                                    self.placed_blocks += 1
-                    if self.start != True:
-                        if pygame.mouse.get_pressed()[2] == 1:
-                            if self.world_data[y][x] == 0:
-                                self.wood_blocks += 1
-                                self.placed_blocks -= 1
-                            if self.world_data[y][x] == 1:
-                                self.steel_blocks += 1
-                                self.placed_blocks -= 1
-                            if self.world_data[y][x] == 2:
-                                self.concrete_blocks += 1
-                                self.placed_blocks -= 1
-                            if self.world_data[y][x] == 3:
-                                self.eagle_block += 1
-                                self.placed_blocks -= 1
-                            self.world_data[y][x] = -1
-                            print(self.placed_blocks)
-
-
+                if pygame.mouse.get_pressed()[0] == 1:
+                    if self.world_data[y][x] != self.current_tile:
+                        if (self.current_tile == 3 and self.eagle_block != 0):
+                            if self.world_data[y][x] == -1:
+                                self.world_data[y][x] = self.current_tile
+                                self.eagle_block -= 1
+                                self.placed_blocks += 1
+                        elif (self.current_tile == 0 and self.wood_blocks != 0):
+                            if self.world_data[y][x] == -1:
+                                self.world_data[y][x] = self.current_tile
+                                self.wood_blocks -= 1
+                                self.placed_blocks += 1
+                        elif (self.current_tile == 1 and self.steel_blocks != 0):
+                            if self.world_data[y][x] == -1:
+                                self.world_data[y][x] = self.current_tile
+                                self.steel_blocks -= 1
+                                self.placed_blocks += 1
+                        elif (self.current_tile == 2 and self.concrete_blocks != 0):
+                            if self.world_data[y][x] == -1:
+                                self.world_data[y][x] = self.current_tile
+                                self.concrete_blocks -= 1
+                                self.placed_blocks += 1
+                if self.start != True:
+                    if pygame.mouse.get_pressed()[2] == 1:
+                        if self.world_data[y][x] == 0:
+                            self.wood_blocks += 1
+                            self.placed_blocks -= 1
+                        if self.world_data[y][x] == 1:
+                            self.steel_blocks += 1
+                            self.placed_blocks -= 1
+                        if self.world_data[y][x] == 2:
+                            self.concrete_blocks += 1
+                            self.placed_blocks -= 1
+                        if self.world_data[y][x] == 3:
+                            self.eagle_block += 1
+                            self.placed_blocks -= 1
+                        self.world_data[y][x] = -1
+                        print(self.placed_blocks)
 
             self.all_sprites.draw(self.screen)
-            if pause:
-                self.draw_pause()
-
             pygame.display.update()
 
 
@@ -850,7 +780,7 @@ class Tank(pygame.sprite.Sprite):
         self.speed_x = 0
         self.speed_y = 0
 
-        if not pause:
+        if not self.choque:
             if keys[pygame.K_UP]:
                 self.speed_y = -3
                 self.angle = 90
@@ -907,22 +837,20 @@ class Gun(pygame.sprite.Sprite):
     def update(self):
         keys = pygame.key.get_pressed()
 
-        if not pause:
-
-            if keys[pygame.K_z]:
-                self.rotation_speed = 2
-            elif keys[pygame.K_x]:
-                self.rotation_speed = -2
-            elif keys[pygame.K_UP]:
-                self.angle = 90
-            elif keys[pygame.K_DOWN]:
-                self.angle = 270
-            elif keys[pygame.K_LEFT]:
-                self.angle = 180
-            elif keys[pygame.K_RIGHT]:
-                self.angle = 0
-            else:
-                self.rotation_speed = 0
+        if keys[pygame.K_z]:
+            self.rotation_speed = 2
+        elif keys[pygame.K_x]:
+            self.rotation_speed = -2
+        elif keys[pygame.K_UP]:
+            self.angle = 90
+        elif keys[pygame.K_DOWN]:
+            self.angle = 270
+        elif keys[pygame.K_LEFT]:
+            self.angle = 180
+        elif keys[pygame.K_RIGHT]:
+            self.angle = 0
+        else:
+            self.rotation_speed = 0
 
         self.angle += self.rotation_speed
         self.angle %= 360
@@ -968,12 +896,11 @@ class Bullet(pygame.sprite.Sprite):
         self.start_y = self.rect.centery
 
     def update(self):
-        if not pause:
-            angle_rad = math.radians(self.angle)
-            dx = self.speed * math.cos(angle_rad)
-            dy = -self.speed * math.sin(angle_rad)
-            self.rect.x += dx
-            self.rect.y += dy
+        angle_rad = math.radians(self.angle)
+        dx = self.speed * math.cos(angle_rad)
+        dy = -self.speed * math.sin(angle_rad)
+        self.rect.x += dx
+        self.rect.y += dy
 
 
 class WB(pygame.sprite.Sprite):
@@ -998,12 +925,11 @@ class WB(pygame.sprite.Sprite):
         self.start_y = self.rect.centery
 
     def update(self):
-        if not pause:
-            angle_rad = math.radians(self.angle)
-            dx = self.speed * math.cos(angle_rad)
-            dy = -self.speed * math.sin(angle_rad)
-            self.rect.x += dx
-            self.rect.y += dy
+        angle_rad = math.radians(self.angle)
+        dx = self.speed * math.cos(angle_rad)
+        dy = -self.speed * math.sin(angle_rad)
+        self.rect.x += dx
+        self.rect.y += dy
 
 
 class BB(pygame.sprite.Sprite):
@@ -1028,12 +954,11 @@ class BB(pygame.sprite.Sprite):
         self.start_y = self.rect.centery
 
     def update(self):
-        if not pause:
-            angle_rad = math.radians(self.angle)
-            dx = self.speed * math.cos(angle_rad)
-            dy = -self.speed * math.sin(angle_rad)
-            self.rect.x += dx
-            self.rect.y += dy
+        angle_rad = math.radians(self.angle)
+        dx = self.speed * math.cos(angle_rad)
+        dy = -self.speed * math.sin(angle_rad)
+        self.rect.x += dx
+        self.rect.y += dy
 
 
 class Song(UIWindow):
