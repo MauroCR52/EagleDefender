@@ -303,10 +303,10 @@ class Menu_window:
         self.user = user
 
         # Buttons
-        self.button_play = pygame.Rect(395, 200, 160, 90)
+        self.button_play = pygame.Rect(395, 180, 160, 90)
+        self.button_help = pygame.Rect(395, 300, 160, 90)
+        self.button_leaderboard = pygame.Rect(395, 420, 160, 90)
         self.button_logout = pygame.Rect(50, 700, 140, 50)
-        self.button_help = pygame.Rect(395, 400, 160, 90)
-        self.button_leaderboard = pygame.Rect(395, 600, 160, 90)
 
         self.button_play_label = pygame_gui.elements.UIButton(relative_rect=self.button_play, text="Jugar",
                                                               manager=self.gui_manager)
