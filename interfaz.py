@@ -306,6 +306,10 @@ class Menu_window:
         self.button_play = pygame.Rect(395, 180, 160, 90)
         self.button_help = pygame.Rect(395, 300, 160, 90)
         self.button_leaderboard = pygame.Rect(395, 420, 160, 90)
+        self.button_load = pygame.Rect(395, 540, 160, 90)
+
+
+
         self.button_logout = pygame.Rect(50, 700, 140, 50)
 
         self.button_play_label = pygame_gui.elements.UIButton(relative_rect=self.button_play, text="Jugar",
@@ -316,6 +320,9 @@ class Menu_window:
                                                               manager=self.gui_manager)
         self.button_leaderboard_label = pygame_gui.elements.UIButton(relative_rect=self.button_leaderboard,
                                                                      text="Salon de la fama", manager=self.gui_manager)
+        self.button_load_label = pygame_gui.elements.UIButton(relative_rect=self.button_load,
+                                                                     text="Cargar", manager=self.gui_manager)
+
 
         # Nombre de usuario
         self.username = pygame.Rect(15, 150, 140, 50)
@@ -365,6 +372,7 @@ class Menu_window:
         self.button_play_label.disable()
         self.button_remove_label.disable()
         self.button_leaderboard_label.disable()
+        self.button_load_label.disable()
         # self.playlist.disable()
 
     def addSong(self):
@@ -460,6 +468,7 @@ class Menu_window:
                     self.button_remove_label.enable()
                     self.button_leaderboard_label.enable()
                     self.playlist.enable()
+                    self.button_load_label.disable()
 
                     self.song_window = None
                     self.button_song = None
@@ -771,7 +780,7 @@ class help_window:
 
         self.screen = pygame.display.set_mode((ancho, alto))
         pygame.display.set_caption("Help")
-        self.background = pygame.image.load("assets/PantallaAyuda.jpg")
+        self.background = pygame.image.load("assets/help_bg.png")
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
 
         self.button_return = pygame.Rect(1200, 610, 140, 60)
