@@ -172,7 +172,7 @@ class InGame:
             time.sleep(30)  # Contar 30 segundos
             self.fire_bullets_rest= 5  # Reiniciar el contador
             print("Contador reiniciado. Total de balas:", self.fire_bullets_rest)
-            self.count_and_reset2() 
+            self.count_and_reset2()
 
     def count_and_reset3(self):
         while True:
