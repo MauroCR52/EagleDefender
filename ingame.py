@@ -153,6 +153,35 @@ class InGame:
 
         self.pause_start = None
         self.tiempo_transcurrido_total = 0
+        self.reset_event = threading.Event()
+        self.reset_event2 = threading.Event()
+        self.reset_event3 = threading.Event()
+
+    def count_and_reset(self):
+        while True:
+            self.reset_event.wait()  # Esperar a que el evento de reinicio se active
+            time.sleep(30)  # Contar 30 segundos
+            self.water_bullets_rest = 5  # Reiniciar el contador
+            print("Contador reiniciado. Total de balas:", self.water_bullets_rest)
+            self.sonidoReload.play()
+            self.count_and_reset()
+
+    def count_and_reset2(self):
+        while True:
+            self.reset_event2.wait()  # Esperar a que el evento de reinicio se active
+            time.sleep(30)  # Contar 30 segundos
+            self.fire_bullets_rest= 5  # Reiniciar el contador
+            print("Contador reiniciado. Total de balas:", self.fire_bullets_rest)
+            self.count_and_reset2() 
+
+    def count_and_reset3(self):
+        while True:
+            self.reset_event3.wait()  # Esperar a que el evento de reinicio se active
+            time.sleep(30)  # Contar 30 segundos
+            self.bomb_bullets_rest= 5  # Reiniciar el contador
+            print("Contador reiniciado. Total de balas:", self.bomb_bullets_rest)
+            self.count_and_reset3()
+
     def draw_world(self):
         for y, row in enumerate(self.world_data):
             for x, tile in enumerate(row):
@@ -308,9 +337,19 @@ class InGame:
         self.gun = Gun(self.tank)
         self.all_sprites.add(self.tank, self.gun)
         self.start = True
+        self.sonidodisparo = pygame.mixer.Sound("Efectos/Tanque disparando.mp3")
+        self.sonidoOutammo = pygame.mixer.Sound("Efectos/Out of Ammo.mp3")
+        self.sonidoReload = pygame.mixer.Sound("Efectos/Reload.mp3")
 
     def begin(self):
         global pause
+        count_thread = threading.Thread(target=self.count_and_reset)
+        count_thread.start()
+        count_thread2 = threading.Thread(target=self.count_and_reset2)
+        count_thread2.start()
+        count_thread3 = threading.Thread(target=self.count_and_reset3)
+        count_thread3.start()
+
 
         if self.rol == "attacker":
             self.attacker.set_text("Atacante: " + self.user1)
@@ -495,6 +534,8 @@ class InGame:
 
                                         messagebox.showinfo("Ganaste", "El atacante " + self.user1 + " gana")
                                         leaderboard = self.verificar_leaderboard(self.user1,f"{self.minutos:02d}:{self.segundos:02d}")
+                                        #victoria= Victory(1366, 768, self.user1)
+                                        #victoria.begin()
                                         if leaderboard:
                                             messagebox.showinfo("Felicidades", "El atacante " + self.user1 + " entró al salon de la fama")
                                         else:
@@ -687,6 +728,12 @@ class InGame:
                 if not pause:
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
+
+                        if keys[pygame.K_SPACE] and self.fire_bullets_rest ==0:
+                            print("Máximo de balas alcanzado para el tipo fuego.Reiniciando contador.")
+                            self.reset_event2.set()  # Activar el evento de reinicio
+                            self.reset_event2.clear()
+
                         if keys[pygame.K_SPACE] and self.fire_bullets_rest != 0:
                             Bullet_type = "fire"
                             self.fire_bullets_rest -= 1
@@ -707,7 +754,14 @@ class InGame:
 
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
+                        if keys[pygame.K_c] and self.water_bullets_rest == 0:
+                            self.sonidoOutammo.play()
+                            print("Máximo de balas alcanzado para el tipo agua.Reiniciando contador.")
+                            self.reset_event.set()  # Activar el evento de reinicio
+                            self.reset_event.clear()  # Limpiar el evento para futuros usos
+
                         if keys[pygame.K_c] and self.water_bullets_rest != 0:
+                            self.sonidodisparo.play()
                             Bullet_type = "water"
                             self.water_bullets_rest -= 1
 
@@ -726,6 +780,12 @@ class InGame:
 
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
+
+                        if keys[pygame.K_c] and self.water_bullets_rest == 0:
+                            print("Máximo de balas alcanzado para el tipo Bomba.Reiniciando contador.")
+                            self.reset_event3.set()  # Activar el evento de reinicio
+                            self.reset_event3.clear()
+
                         if keys[pygame.K_v] and self.bomb_bullets_rest != 0:
                             Bullet_type = "bomb"
                             self.bomb_bullets_rest -= 1
@@ -1055,3 +1115,68 @@ class Song(UIWindow):
 
     def update(self, time_delta):
         super().update(time_delta)
+
+class Victory:
+    def __init__(self,ancho,alto, user1):
+        pygame.init()
+        mixer.init()
+
+        self.screen = pygame.display.set_mode((ancho, alto))
+        pygame.display.set_caption("Victory")
+        self.background = pygame.image.load("assets/Victory.jpg")
+
+        # Inicializar el administrador de interfaz de usuario de pygame_gui
+        self.gui_manager = pygame_gui.UIManager((ancho, alto))
+        self.user = user1
+
+        pygame.mixer.music.load("Efectos/Zelda Main Theme Son.mp3")
+        pygame.mixer.music.play()
+
+        self.button_return = pygame.Rect(1200, 610, 140, 60)
+
+        self.button_return_label = pygame_gui.elements.UIButton(relative_rect=self.button_return, text="Regresar",
+                                                                manager=self.gui_manager)
+
+        self.texto = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((500, 10), (200, 50)),
+                                                            text= self.user,
+                                                            manager=self.gui_manager)
+
+
+
+
+
+    def begin(self):
+
+        clock = pygame.time.Clock()  # Agrega un reloj para limitar la velocidad de fotogramas
+
+        while True:
+            time_delta = clock.tick(60) / 1000.0  # Limita la velocidad de fotogramas a 60 FPS
+
+            # salir del juego con la ventana
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.button_return_label:
+                        #pygame.mixer.music.stop()
+                        menu = Menu_window(1366, 768, self.user)
+                        menu.begin()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
+
+
+                # Pasar eventos de pygame a pygame_gui
+                self.gui_manager.process_events(event)
+
+            self.gui_manager.update(time_delta)
+            self.screen.blit(self.background, (0, 0))
+
+        # Dibuja los elementos de la interfaz de usuario de pygame_gui
+            self.gui_manager.draw_ui(self.screen)
+
+            pygame.display.update()

@@ -302,6 +302,9 @@ class Menu_window:
 
         self.user = user
 
+        pygame.mixer.music.load("Efectos/The Army Song 8 Bi.mp3")
+        pygame.mixer.music.play(-1)
+
         # Buttons
         self.button_play = pygame.Rect(395, 180, 160, 90)
         self.button_help = pygame.Rect(395, 300, 160, 90)
