@@ -153,6 +153,34 @@ class InGame:
 
         self.pause_start = None
         self.tiempo_transcurrido_total = 0
+        self.reset_event = threading.Event()
+        self.reset_event2 = threading.Event()
+        self.reset_event3 = threading.Event()
+
+    def count_and_reset(self):
+        while True:
+            self.reset_event.wait()  # Esperar a que el evento de reinicio se active
+            time.sleep(30)  # Contar 30 segundos
+            self.water_bullets_rest = 5  # Reiniciar el contador
+            print("Contador reiniciado. Total de balas:", self.water_bullets_rest)
+            self.count_and_reset()
+
+    def count_and_reset2(self):
+        while True:
+            self.reset_event2.wait()  # Esperar a que el evento de reinicio se active
+            time.sleep(30)  # Contar 30 segundos
+            self.fire_bullets_rest= 5  # Reiniciar el contador
+            print("Contador reiniciado. Total de balas:", self.fire_bullets_rest)
+            self.count_and_reset2()
+
+    def count_and_reset3(self):
+        while True:
+            self.reset_event3.wait()  # Esperar a que el evento de reinicio se active
+            time.sleep(30)  # Contar 30 segundos
+            self.bomb_bullets_rest= 5  # Reiniciar el contador
+            print("Contador reiniciado. Total de balas:", self.bomb_bullets_rest)
+            self.count_and_reset3()
+
     def draw_world(self):
         for y, row in enumerate(self.world_data):
             for x, tile in enumerate(row):
@@ -311,6 +339,13 @@ class InGame:
 
     def begin(self):
         global pause
+        count_thread = threading.Thread(target=self.count_and_reset)
+        count_thread.start()
+        count_thread2 = threading.Thread(target=self.count_and_reset2)
+        count_thread2.start()
+        count_thread3 = threading.Thread(target=self.count_and_reset3)
+        count_thread3.start()
+
 
         if self.rol == "attacker":
             self.attacker.set_text("Atacante: " + self.user1)
@@ -687,7 +722,13 @@ class InGame:
                 if not pause:
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
-                        if keys[pygame.K_SPACE] and self.fire_bullets_rest != 0:
+
+                        if keys[pygame.K_SPACE] and self.fire_bullets_rest ==0:
+                            print("Máximo de balas alcanzado para el tipo fuego.Reiniciando contador.")
+                            self.reset_event2.set()  # Activar el evento de reinicio
+                            self.reset_event2.clear()
+
+                    if keys[pygame.K_SPACE] and self.fire_bullets_rest != 0:
                             Bullet_type = "fire"
                             self.fire_bullets_rest -= 1
 
@@ -707,6 +748,11 @@ class InGame:
 
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
+                        if keys[pygame.K_c] and self.water_bullets_rest == 0:
+                            print("Máximo de balas alcanzado para el tipo agua.Reiniciando contador.")
+                            self.reset_event.set()  # Activar el evento de reinicio
+                            self.reset_event.clear()  # Limpiar el evento para futuros usos
+
                         if keys[pygame.K_c] and self.water_bullets_rest != 0:
                             Bullet_type = "water"
                             self.water_bullets_rest -= 1
@@ -726,6 +772,12 @@ class InGame:
 
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
+
+                        if keys[pygame.K_c] and self.water_bullets_rest == 0:
+                            print("Máximo de balas alcanzado para el tipo Bomba.Reiniciando contador.")
+                            self.reset_event3.set()  # Activar el evento de reinicio
+                            self.reset_event3.clear()
+
                         if keys[pygame.K_v] and self.bomb_bullets_rest != 0:
                             Bullet_type = "bomb"
                             self.bomb_bullets_rest -= 1
