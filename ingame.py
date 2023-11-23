@@ -172,7 +172,8 @@ class InGame:
             time.sleep(30)  # Contar 30 segundos
             self.fire_bullets_rest= 5  # Reiniciar el contador
             print("Contador reiniciado. Total de balas:", self.fire_bullets_rest)
-            self.count_and_reset2() 
+            self.sonidoReload.play()
+            self.count_and_reset2()
 
     def count_and_reset3(self):
         while True:
@@ -180,6 +181,7 @@ class InGame:
             time.sleep(30)  # Contar 30 segundos
             self.bomb_bullets_rest= 5  # Reiniciar el contador
             print("Contador reiniciado. Total de balas:", self.bomb_bullets_rest)
+            self.sonidoReload.play()
             self.count_and_reset3()
 
     def draw_world(self):
@@ -340,6 +342,10 @@ class InGame:
         self.sonidodisparo = pygame.mixer.Sound("Efectos/Tanque disparando.mp3")
         self.sonidoOutammo = pygame.mixer.Sound("Efectos/Out of Ammo.mp3")
         self.sonidoReload = pygame.mixer.Sound("Efectos/Reload.mp3")
+        #self.sonidoBomba = pygame.mixer.Sound("Efectos/Sonido de explosión.mp3")
+        self.sonidodestruccionleve= pygame.mixer.Sound("Efectos/Muro rompiendos e.mp3")
+        self.sonidodestruccion = pygame.mixer.Sound("Efectos/Destruccion.mp3")
+
 
     def begin(self):
         global pause
@@ -594,84 +600,100 @@ class InGame:
 
 
                                 elif self.world_data[y][x] == 0:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_wood_blocks += 1
                                     self.score += 5
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "water" and self.world_data[y][x] == 1:
+                                    self.sonidodestruccionleve.play()
                                     self.world_data[y][x] = 5
 
                                 elif Bullet_type == "water" and self.world_data[y][x] == 5:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_steel_blocks += 1
                                     self.score += 10
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "water" and self.world_data[y][x] == 2:
+                                    self.sonidodestruccionleve.play()
                                     self.world_data[y][x] = 4
 
                                 elif Bullet_type == "water" and self.world_data[y][x] == 4:
+                                    self.sonidodestruccionleve.play()
                                     self.world_data[y][x] = 6
 
                                 elif Bullet_type == "water" and self.world_data[y][x] == 6:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_concrete_blocks += 1
                                     self.score += 15
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "fire" and self.world_data[y][x] == 1:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_steel_blocks += 1
                                     self.score += 10
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "fire" and self.world_data[y][x] == 5:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_steel_blocks += 1
                                     self.score += 15
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "fire" and self.world_data[y][x] == 2:
+                                    self.sonidodestruccionleve.play()
                                     self.world_data[y][x] = 6
 
                                 elif Bullet_type == "fire" and self.world_data[y][x] == 4:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_concrete_blocks += 1
                                     self.score += 10
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "fire" and self.world_data[y][x] == 6:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_concrete_blocks += 1
                                     self.score += 15
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "bomb" and self.world_data[y][x] == 1:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_steel_blocks += 1
                                     self.score += 10
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "bomb" and self.world_data[y][x] == 2:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_concrete_blocks += 1
                                     self.score += 15
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "bomb" and self.world_data[y][x] == 4:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_concrete_blocks += 1
                                     self.score += 10
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "bomb" and self.world_data[y][x] == 5:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_steel_blocks += 1
                                     self.score += 15
                                     self.destroyed_blocks += 1
 
                                 elif Bullet_type == "bomb" and self.world_data[y][x] == 6:
+                                    self.sonidodestruccion.play()
                                     self.world_data[y][x] = -1
                                     self.destroyed_concrete_blocks += 1
                                     self.score += 15
@@ -730,13 +752,16 @@ class InGame:
                         keys = pygame.key.get_pressed()
 
                         if keys[pygame.K_SPACE] and self.fire_bullets_rest ==0:
+                            self.sonidoOutammo.play()
                             print("Máximo de balas alcanzado para el tipo fuego.Reiniciando contador.")
                             self.reset_event2.set()  # Activar el evento de reinicio
                             self.reset_event2.clear()
 
                         if keys[pygame.K_SPACE] and self.fire_bullets_rest != 0:
+                            self.sonidodisparo.play()
                             Bullet_type = "fire"
                             self.fire_bullets_rest -= 1
+
 
                             bullet_angle = self.gun.angle
                             bullet_x = self.gun.rect.centerx + (self.gun.gun_length + self.gun.tip_offset) * math.cos(
@@ -781,12 +806,14 @@ class InGame:
                     if self.gun.can_shoot:
                         keys = pygame.key.get_pressed()
 
-                        if keys[pygame.K_c] and self.water_bullets_rest == 0:
+                        if keys[pygame.K_v] and self.bomb_bullets_rest == 0:
+                            self.sonidoOutammo.play()
                             print("Máximo de balas alcanzado para el tipo Bomba.Reiniciando contador.")
                             self.reset_event3.set()  # Activar el evento de reinicio
                             self.reset_event3.clear()
 
                         if keys[pygame.K_v] and self.bomb_bullets_rest != 0:
+                            self.sonidodisparo.play()
                             Bullet_type = "bomb"
                             self.bomb_bullets_rest -= 1
                             bullet_angle = self.gun.angle
@@ -1117,7 +1144,7 @@ class Song(UIWindow):
         super().update(time_delta)
 
 class Victory:
-    def __init__(self,ancho,alto, user1):
+    def __init__(self,ancho,alto, user1, user2):
         pygame.init()
         mixer.init()
 
@@ -1128,6 +1155,7 @@ class Victory:
         # Inicializar el administrador de interfaz de usuario de pygame_gui
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
         self.user = user1
+        self.user2 = user2
 
         pygame.mixer.music.load("Efectos/Zelda Main Theme Son.mp3")
         pygame.mixer.music.play()
