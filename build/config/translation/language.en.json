@@ -1,0 +1,11 @@
+{
+  "en": {
+    "sign_in": "Sign in",
+    "forgot_pass": "Forgot password?",
+    "sign_up": "Sign up",
+    "create_account": "Create account",
+    "upload_picture": "Upload photo",
+    "error_picture": "Select an image with pgn or jpg format",
+    "role": "Select Player 1 role"
+  }
+}

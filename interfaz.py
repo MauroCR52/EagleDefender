@@ -126,9 +126,12 @@ class SignUp_Window:
                                                             manager=self.gui_manager)
 
         # Cuadros de texto del Login
-        self.username_rect = pygame.Rect(540, 260, 350, 45)
-        self.password_rect = pygame.Rect(540, 380, 350, 45)
-        self.password_confirm_rect = pygame.Rect(540, 450, 350, 45)
+        self.username_rect = pygame.Rect(540, 160, 350, 45)
+        self.name_rect = pygame.Rect(540, 220, 350, 45)
+        self.age_rect = pygame.Rect(540, 280, 350, 45)
+        self.email_rect = pygame.Rect(540, 350, 350, 45)
+        self.password_rect = pygame.Rect(540, 420, 350, 45)
+        self.password_confirm_rect = pygame.Rect(540, 490, 350, 45)
 
         # Botones
         self.button_signin = pygame.Rect(455, 540, 150, 70)
@@ -137,6 +140,12 @@ class SignUp_Window:
 
         # Crear un cuadro de entrada
         self.username_entry = pygame_gui.elements.UITextEntryLine(relative_rect=self.username_rect,
+                                                                  manager=self.gui_manager)
+        self.name_entry = pygame_gui.elements.UITextEntryLine(relative_rect=self.name_rect,
+                                                                  manager=self.gui_manager)
+        self.age_entry = pygame_gui.elements.UITextEntryLine(relative_rect=self.age_rect,
+                                                              manager=self.gui_manager)
+        self.email_entry = pygame_gui.elements.UITextEntryLine(relative_rect=self.email_rect,
                                                                   manager=self.gui_manager)
         self.password_entry = pygame_gui.elements.UITextEntryLine(relative_rect=self.password_rect,
                                                                   manager=self.gui_manager)
@@ -250,10 +259,19 @@ class SignUp_Window:
 
     def createAccount(self):
         self.username_entry.get_text()
+        self.name_entry.get_text()
+        self.age_entry.get_text()
+        self.email_entry.get_text()
         self.password_entry.get_text()
         self.password_entry.get_text()
         if not self.username_entry.get_text().strip():
             messagebox.showinfo("Error", "Ingresa un nombre de Usuario")
+        elif not self.name_entry.get_text().strip():
+            messagebox.showinfo("Error", "Ingresa un nombre")
+        elif not self.age_entry.get_text().strip():
+            messagebox.showinfo("Error", "Ingresa tu edad")
+        elif not self.email_entry.get_text().strip():
+            messagebox.showinfo("Error", "Ingresa un correo")
         elif not self.password_entry.get_text().strip():
             messagebox.showinfo("Error", "Ingresa una contraseÃ±a")
         elif self.password_entry.get_text() != self.password_confirm_entry.get_text():
@@ -263,6 +281,9 @@ class SignUp_Window:
                 data = json.load(archivo)
             new_user = {
                 "username": self.username_entry.get_text(),
+                "name": self.name_entry.get_text(),
+                "age": self.age_entry.get_text(),
+                "email": self.email_entry.get_text(),
                 "password": self.password_entry.get_text(),
                 "language": self.gui_manager.get_locale(),
                 "profile_pic": self.pic_path,
@@ -270,8 +291,11 @@ class SignUp_Window:
             }
             users = data["users"]
             user_exist = next((user for user in users if user["username"] == new_user["username"]), None)
+            email_exist = next((user for user in users if user["email"] == new_user["email"]), None)
             if user_exist:
                 messagebox.showinfo("Error", "Ya existe un usuario con ese nombre")
+            elif email_exist:
+                messagebox.showinfo("Error", "Ya existe un usuario con ese correo")
             else:
                 data["users"].append(new_user)
                 with open('config/users.json', 'w') as archivo:
