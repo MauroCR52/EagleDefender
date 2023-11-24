@@ -16,6 +16,7 @@ from pygame_gui.elements import UIWindow
 from pygame_gui.elements import UIButton
 from pygame_gui.elements import UISelectionList
 from datetime import datetime
+
 Bullet_type = ""
 pause = False
 
@@ -540,17 +541,16 @@ class InGame:
 
                                         messagebox.showinfo("Ganaste", "El atacante " + self.user1 + " gana")
                                         leaderboard = self.verificar_leaderboard(self.user1,f"{self.minutos:02d}:{self.segundos:02d}")
-                                        #victoria= Victory(1366, 768, self.user1)
-                                        #victoria.begin()
+
                                         if leaderboard:
                                             messagebox.showinfo("Felicidades", "El atacante " + self.user1 + " entró al salon de la fama")
                                         else:
                                             messagebox.showinfo("Lo siento", "El atacante " + self.user1 + " no pudo entrar al salon de la fama")
 
-
-
-                                        menu = Menu_window(1366, 768, self.user1)
-                                        menu.begin()
+                                        victoria = Victory(1366, 768, self.user1)
+                                        victoria.begin()
+                                        #menu = Menu_window(1366, 768, self.user1)
+                                        #menu.begin()
 
                                     else:
                                         with open("config/leaderboard.csv", 'a', newline='') as archivo:
@@ -589,14 +589,16 @@ class InGame:
 
                                         messagebox.showinfo("Ganaste", "El atacante " + self.user2 + " gana")
 
+
+
                                         leaderboard = self.verificar_leaderboard(self.user2,f"{self.minutos:02d}:{self.segundos:02d}")
                                         if leaderboard:
                                             messagebox.showinfo("Felicidades", "El atacante " + self.user2 + " entró al salon de la fama")
                                         else:
                                             messagebox.showinfo("Lo siento", "El atacante " + self.user2 + " no pudo entrar al salon de la fama")
 
-                                        menu = Menu_window(1366, 768, self.user1)
-                                        menu.begin()
+                                        #menu = Menu_window(1366, 768, self.user1)
+                                        #menu.begin()
 
 
                                 elif self.world_data[y][x] == 0:
@@ -1144,28 +1146,31 @@ class Song(UIWindow):
         super().update(time_delta)
 
 class Victory:
-    def __init__(self,ancho,alto, user1, user2):
+    def __init__(self,ancho,alto, user1):
         pygame.init()
         mixer.init()
 
         self.screen = pygame.display.set_mode((ancho, alto))
         pygame.display.set_caption("Victory")
         self.background = pygame.image.load("assets/Victory.jpg")
+        #font_id = self.gui_manager.create_font_id(font_size=14, font_name="Arial", bold=True, italic=False)
 
         # Inicializar el administrador de interfaz de usuario de pygame_gui
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
+        #font_id = self.gui_manager.create_font_id(font_size=14, font_name="Arial", bold=True, italic=False)
+
         self.user = user1
-        self.user2 = user2
 
         pygame.mixer.music.load("Efectos/Zelda Main Theme Son.mp3")
         pygame.mixer.music.play()
+        pygame.mixer.music.set_volume(1)
 
-        self.button_return = pygame.Rect(1200, 610, 140, 60)
+        self.button_return = pygame.Rect(1200, 700, 140, 60)
 
         self.button_return_label = pygame_gui.elements.UIButton(relative_rect=self.button_return, text="Regresar",
                                                                 manager=self.gui_manager)
 
-        self.texto = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((500, 10), (200, 50)),
+        self.texto = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((200, 400), (500, 30)),
                                                             text= self.user,
                                                             manager=self.gui_manager)
 
@@ -1188,6 +1193,7 @@ class Victory:
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.button_return_label:
+                        from interfaz import Menu_window
                         #pygame.mixer.music.stop()
                         menu = Menu_window(1366, 768, self.user)
                         menu.begin()
