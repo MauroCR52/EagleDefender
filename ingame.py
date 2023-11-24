@@ -1144,7 +1144,7 @@ class Song(UIWindow):
         super().update(time_delta)
 
 class Victory:
-    def __init__(self,ancho,alto, user1, user2):
+    def __init__(self,ancho,alto, user1):
         pygame.init()
         mixer.init()
 
@@ -1155,7 +1155,6 @@ class Victory:
         # Inicializar el administrador de interfaz de usuario de pygame_gui
         self.gui_manager = pygame_gui.UIManager((ancho, alto))
         self.user = user1
-        self.user2 = user2
 
         pygame.mixer.music.load("Efectos/Zelda Main Theme Son.mp3")
         pygame.mixer.music.play()
