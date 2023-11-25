@@ -561,6 +561,9 @@ class InGame:
                                         else:
                                             messagebox.showinfo("Lo siento", "El atacante " + self.user2 + " no pudo entrar al salon de la fama")
 
+                                        victoria = Victory(1366, 768, self.user2)
+                                        victoria.begin()
+
                                         #menu = Menu_window(1366, 768, self.user1)
                                         #menu.begin()
 
