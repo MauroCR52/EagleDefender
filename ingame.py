@@ -224,43 +224,6 @@ class InGame:
 
         self.button_start_label.disable()
 
-    #def actualizar_cronometro(self, seleccion):
-    #     while self.cronometro:
-    #         pygame.time.wait(100)
-    #         if self.inicio is not None and seleccion == self.seleccion_actual:
-    #             tiempo_transcurrido = (pygame.time.get_ticks() / 1000) - self.inicio
-    #
-    #             # Calcula los minutos y segundos
-    #             self.minutos = int(tiempo_transcurrido // 60)
-    #             self.segundos = int(tiempo_transcurrido % 60)
-    #
-    #             # Formatea el tiempo en minutos y segundos
-    #             self.tiempo_formateado = f"Tiempo: {self.minutos:02d}:{self.segundos:02d}"
-    #
-    #             self.texto_cronometro.set_text(self.tiempo_formateado)
-    #
-    #             # if self.duraA / 2 - 0.5 <= tiempo_transcurrido <= self.duraA / 2 + 0.5:
-    #             # if self.destroyed_blocks >= self.placed_blocks // 2:
-    #             # print("se puede usar el poder")
-    #             # pygame.time.set_timer(pygame.USEREVENT + 1, 10000)
-    #             # while():
-    #             # if self.power_activation == True:
-    #             # self.water_bullets_rest = round(self.water_bullets_rest + (int(self.popularity) / float(self.danceability) * float(self.acousticness) + float(self.tempo)))
-    #             # self.power_activation = False
-    #             # self.water_bullets_rest = self.normal_bullets
-    #             # else:
-    #             # print("no se puede usar el poder")
-    #
-    #             if tiempo_transcurrido >= self.duraA:
-    #                 pygame.mixer.music.stop()
-    #                 self.texto_cronometro.set_text(f"{self.tiempo_formateado}")
-    #                 self.inicio = None
-    #                 if self.rol == "defender":
-    #                     messagebox.showinfo("Perdistes", "El defensor " + self.user1 + " gana")
-    #                 else:
-    #                     messagebox.showinfo("Perdistes", "El defensor " + self.user2 + " gana")
-    #
-    # # def activate_power(self):
 
     # Función para obtener una canción aleatoria de un usuario específico
     def obtener_cancion_aleatoria(self, usuario):
@@ -393,17 +356,14 @@ class InGame:
 
                     self.texto_cronometro.set_text(self.tiempo_formateado)
 
-                    # if self.duraA / 2 - 0.5 <= tiempo_transcurrido <= self.duraA / 2 + 0.5:
-                    # if self.destroyed_blocks >= self.placed_blocks // 2:
-                    # print("se puede usar el poder")
-                    # pygame.time.set_timer(pygame.USEREVENT + 1, 10000)
-                    # while():
-                    # if self.power_activation == True:
-                    # self.water_bullets_rest = round(self.water_bullets_rest + (int(self.popularity) / float(self.danceability) * float(self.acousticness) + float(self.tempo)))
-                    # self.power_activation = False
-                    # self.water_bullets_rest = self.normal_bullets
-                    # else:
-                    # print("no se puede usar el poder")
+                    if self.destroyed_blocks >= self.placed_blocks // 2:
+                        if (self.duraA / 2 - 0.5 <= tiempo_transcurrido <= self.duraA / 2 + 10.5):
+                            print("se puede usar el poder")
+                            if tiempo_transcurrido >= self.duraA / 2 + 10.4:
+                                self.water_bullets_rest = 5
+                            if self.power_activation == True:
+                                self.water_bullets_rest = round(self.water_bullets_rest + (int(self.popularity) / float(self.danceability) * float(self.acousticness) + float(self.tempo)))
+                                self.power_activation = False
 
                     if tiempo_transcurrido >= self.duraA:
                         pygame.mixer.music.stop()
