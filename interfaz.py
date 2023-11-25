@@ -347,6 +347,10 @@ class Menu_window:
         self.button_remove_label = pygame_gui.elements.UIButton(relative_rect=self.button_remove, text="Quitar",
                                                                 manager=self.gui_manager)
 
+        self.tituloplaylist = pygame.Rect(870, 130, 200, 40)
+        self.playlist_label = pygame_gui.elements.UILabel(relative_rect=self.tituloplaylist, text=" My Playlist",
+                                                                manager=self.gui_manager)
+
         self.song_window = None
         self.button_song = None
         self.song_selection = None
