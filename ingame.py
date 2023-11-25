@@ -158,6 +158,7 @@ class InGame:
         self.reset_event2 = threading.Event()
         self.reset_event3 = threading.Event()
 
+
     def count_and_reset(self):
         while True:
             self.reset_event.wait()  # Esperar a que el evento de reinicio se active
@@ -184,6 +185,9 @@ class InGame:
             print("Contador reiniciado. Total de balas:", self.bomb_bullets_rest)
             self.sonidoReload.play()
             self.count_and_reset3()
+
+
+
 
     def draw_world(self):
         for y, row in enumerate(self.world_data):
@@ -220,7 +224,7 @@ class InGame:
 
         self.button_start_label.disable()
 
-    # def actualizar_cronometro(self, seleccion):
+    #def actualizar_cronometro(self, seleccion):
     #     while self.cronometro:
     #         pygame.time.wait(100)
     #         if self.inicio is not None and seleccion == self.seleccion_actual:
@@ -336,7 +340,7 @@ class InGame:
         self.audioD = MP3(self.audioplay)
         self.duraA = self.audioD.info.length
         self.inicio = pygame.time.get_ticks() / 1000
-        self.tank = Tank(80, 330)
+        self.tank = Tank(80, 330, self.world_data, self.TILE_SIZE)
         self.gun = Gun(self.tank)
         self.all_sprites.add(self.tank, self.gun)
         self.start = True
@@ -770,7 +774,7 @@ class InGame:
                                 math.radians(bullet_angle))
                             bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
                                 math.radians(bullet_angle))
-                            bullet = Bullet(bullet_x, bullet_y, bullet_angle)
+                            bullet = Bullet(bullet_x, bullet_y, bullet_angle, self.world_data, self.TILE_SIZE)
                             self.all_sprites.add(bullet)
                             self.bullet_sprites.add(bullet)
                             self.gun.can_shoot = False
@@ -797,7 +801,7 @@ class InGame:
                                 math.radians(bullet_angle))
                             bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
                                 math.radians(bullet_angle))
-                            self.waterbullet = WB(bullet_x, bullet_y, bullet_angle)
+                            self.waterbullet = WB(bullet_x, bullet_y, bullet_angle, self.world_data, self.TILE_SIZE)
                             self.all_sprites.add(self.waterbullet)
                             self.bullet_sprites.add(self.waterbullet)
                             self.gun.can_shoot = False
@@ -823,7 +827,7 @@ class InGame:
                                 math.radians(bullet_angle))
                             bullet_y = self.gun.rect.centery - (self.gun.gun_length + self.gun.tip_offset) * math.sin(
                                 math.radians(bullet_angle))
-                            bombbullet = BB(bullet_x, bullet_y, bullet_angle)
+                            bombbullet = BB(bullet_x, bullet_y, bullet_angle, self.world_data, self.TILE_SIZE)
                             self.all_sprites.add(bombbullet)
                             self.bullet_sprites.add(bombbullet)
                             self.gun.can_shoot = False
@@ -922,16 +926,18 @@ class InGame:
 
 
 class Tank(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, world_data, TILE_SIZE):
         super().__init__()
         self.original_tank_image = pygame.image.load("assets/tr2.png").convert_alpha()
-        self.tank_image = pygame.transform.scale(self.original_tank_image, (50, 30))
+        self.tank_image = pygame.transform.scale(self.original_tank_image, (60, 50))
         self.image = self.tank_image
         self.rect = self.tank_image.get_rect(center=(x, y))
         self.angle = 0
         self.speed = 0
         self.rotation_speed = 0
         self.choque = False
+        self.world_data = world_data
+        self.TILE_SIZE = TILE_SIZE
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -958,11 +964,25 @@ class Tank(pygame.sprite.Sprite):
                 self.angle = 0
                 # move_forward_sound.play()
 
+            old_x, old_y = self.rect.x, self.rect.y
+
             self.rect.x += self.speed_x
             self.rect.y += self.speed_y
 
-            self.image = pygame.transform.rotate(self.original_tank_image, self.angle)
+            self.image = pygame.transform.rotate(self.tank_image, self.angle)
             self.rect = self.image.get_rect(center=self.rect.center)
+
+            for y, row in enumerate(self.world_data):
+                for x, tile in enumerate(row):
+                    if tile >= 0:
+                        tile_rect = pygame.Rect(x * self.TILE_SIZE, y * self.TILE_SIZE+5, self.TILE_SIZE-10,
+                                                self.TILE_SIZE-10)
+
+                        if self.rect.colliderect(tile_rect):
+                            self.rect.x, self.rect.y = old_x, old_y
+
+
+
 
             angle_rad = math.radians(self.angle)
             dx = math.cos(angle_rad) * self.speed
@@ -975,16 +995,17 @@ class Tank(pygame.sprite.Sprite):
 class Gun(pygame.sprite.Sprite):
     def __init__(self, tank):
         super().__init__()
+        self.tank = tank
         self.original_gun_image = pygame.image.load("assets/gr3.png").convert_alpha()
-        self.gun_image = pygame.transform.scale(self.original_gun_image, (20, 40))
+        self.gun_image = pygame.transform.scale(self.original_gun_image, (60, 30))
         self.image = self.gun_image
-        self.rect = self.gun_image.get_rect(center=tank.rect.center)
+        self.rect = self.gun_image.get_rect(center=self.tank.rect.center)
         self.angle = 0
         self.rotation_speed = 0
         self.tank = tank
-        self.gun_length = 40
+        self.gun_length = 22
         self.gun_rotation_direction = 0
-        self.tip_offset = 30
+        self.tip_offset = 25
         self.original_gun_length = 0
         self.gun_back_start_time = 0
         self.gun_back_duration = 200
@@ -1016,8 +1037,8 @@ class Gun(pygame.sprite.Sprite):
         self.angle += self.rotation_speed
         self.angle %= 360
 
-        self.image = pygame.transform.rotate(self.original_gun_image, self.angle)
-        self.rect = self.image.get_rect(center=self.rect.center)
+        self.image = pygame.transform.rotate(self.gun_image, self.angle)
+        self.rect = self.image.get_rect(center=self.tank.rect.center)
 
         angle_rad = math.radians(self.angle)
         dx = math.cos(angle_rad) * self.gun_length
@@ -1035,14 +1056,14 @@ class Gun(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y, angle, world_data, TILE_SIZE):
         super().__init__()
         self.original_bullet_image = pygame.image.load("assets/bullet.png").convert_alpha()
         self.bullet_image = pygame.transform.scale(self.original_bullet_image, (20, 20))
         self.image = self.bullet_image
         self.angle = angle
         self.speed = 1.5
-        self.tank = Tank(375, 300)
+        self.tank = Tank(375, 3000, world_data, TILE_SIZE)
         self.gun = Gun(self.tank)
         self.bullet_type = "fire_bullet"
         self.max_distance = 8 * 51.2
@@ -1066,14 +1087,14 @@ class Bullet(pygame.sprite.Sprite):
 
 
 class WB(pygame.sprite.Sprite):
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y, angle, world_data, TILE_SIZE):
         super().__init__()
         self.original_bullet_image = pygame.image.load("assets/WB.png").convert_alpha()
         self.bullet_image = pygame.transform.scale(self.original_bullet_image, (20, 20))
         self.image = self.bullet_image
         self.angle = angle
         self.speed = 1.5
-        self.tank = Tank(375, 300)
+        self.tank = Tank(375, 300, world_data, TILE_SIZE)
         self.gun = Gun(self.tank)
         self.bullet_type = "water"
 
@@ -1096,14 +1117,14 @@ class WB(pygame.sprite.Sprite):
 
 
 class BB(pygame.sprite.Sprite):
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y, angle, world_data, TILE_SIZE):
         super().__init__()
         self.original_bullet_image = pygame.image.load("assets/BB.png").convert_alpha()
         self.bullet_image = pygame.transform.scale(self.original_bullet_image, (20, 20))
         self.image = self.bullet_image
         self.angle = angle
         self.speed = 1.5
-        self.tank = Tank(375, 300)
+        self.tank = Tank(375, 300, world_data, TILE_SIZE)
         self.gun = Gun(self.tank)
         self.bullet_type = "bomb_bullet"
 
