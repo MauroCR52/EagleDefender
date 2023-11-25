@@ -2,6 +2,9 @@
     "users": [
         {
             "username": "pepito",
+            "name": "Pepe",
+            "age": "18",
+            "email": "pepito777@gmail.com",
             "password": "123",
             "language": "es",
             "profile_pic": "Multimedia/Fotooooooo.jpg",
@@ -14,6 +17,9 @@
         },
         {
             "username": "marco",
+            "name": "Marco",
+            "age": "43",
+            "email": "marcoh@gmail.com",
             "password": "123",
             "language": "en",
             "profile_pic": "Multimedia/download_5.jpg",
@@ -30,6 +36,9 @@
         },
         {
             "username": "juan",
+            "name": "Juan Fernando",
+            "age": "14",
+            "email": "csgoplayer12@gmail.com",
             "password": "1234",
             "language": "es",
             "profile_pic": "assets/no_pic.png",
@@ -39,6 +48,9 @@
         },
         {
             "username": "maurito",
+            "name": "Mauricio",
+            "age": "21",
+            "email": "mauri8@gmail.com",
             "password": "hola",
             "language": "es",
             "profile_pic": "assets/no_pic.png",
@@ -50,12 +62,50 @@
         },
         {
             "username": "gabriel",
+            "name": "Gabriel",
+            "age": "18",
+            "email": "elgabi08@gmail.com",
             "password": "1234",
             "language": "es",
             "profile_pic": "C:\\Users\\maulu\\fotos_prueba\\prueba2.png",
             "songs": [
                 "Beat It.mp3",
                 "Iron Maiden  The Trooper.mp3"
+            ]
+        },
+        {
+            "username": "GamerMaster",
+            "name": "Juan",
+            "age": "27",
+            "email": "juanelcrack@gmail.com",
+            "password": "123",
+            "language": "es",
+            "profile_pic": "assets/no_pic.png",
+            "songs": []
+        },
+        {
+            "username": "Chris",
+            "name": "Christian",
+            "age": "19",
+            "email": "christianna@gmail.com",
+            "password": "12345",
+            "language": "es",
+            "profile_pic": "assets/no_pic.png",
+            "songs": []
+        },
+        {
+            "username": "fernandogamer",
+            "name": "Fernando",
+            "age": "50",
+            "email": "fernando777@gmail.com",
+            "password": "123",
+            "language": "es",
+            "profile_pic": "C:\\Users\\Gabriel\\Desktop\\Signo de pregunta png.png",
+            "songs": [
+                "Bonnie Tyler  Holding Out For A Hero Official HD Video.mp3",
+                "Elton John  Im Still Standing.mp3",
+                "Beat It.mp3",
+                "The Police  Message In A Bottle.mp3"
             ]
         }
     ]
