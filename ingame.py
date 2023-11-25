@@ -15,11 +15,21 @@ from tkinter import messagebox
 from pygame_gui.elements import UIWindow
 from pygame_gui.elements import UIButton
 from pygame_gui.elements import UISelectionList
+from pynput.mouse import Listener
+
 from datetime import datetime
 
 Bullet_type = ""
 pause = False
+left_click = False
 
+def on_click(x, y, button, pressed):
+    if (button == "Button.left" and pressed):
+        left_click = True
+    else: 
+        left_click = False
+    print(left_click)
+    
 
 
 class InGame:
@@ -382,6 +392,7 @@ class InGame:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                    
 
                 if (event.type == pygame.KEYDOWN):
                     if event.key == pygame.K_ESCAPE:
